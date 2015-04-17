@@ -23,6 +23,9 @@ It is a project goal to support operation from MS Windows 8. For this OS, you
 should install `Git for Windows`_ which bundles some GNU CLI tools and an
 OpenSSH environment.
 
+* During installation, allow Git to install the CLI tools into your ``PATH``.
+* Set your ``HOME`` environment variable to ``%HOMEPATH%`` for SSH to work properly.
+
 :Author: tundish
 :Copyright: 2015 D Haynes
 :Licence: `GNU General Public License`_
