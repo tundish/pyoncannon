@@ -8,7 +8,7 @@ The Pyon Cannon
 `Fire Python into the clouds!`
 
 * A bundle of scripts to set up a Python node for web applications.
-* Nothing do with `Canon Pyon`_.
+* Nothing to do with `Canon Pyon`_.
 
 Requirements
 ::::::::::::
