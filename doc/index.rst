@@ -1,22 +1,32 @@
-.. PyonCannon documentation master file, created by
-   sphinx-quickstart on Fri Apr 17 17:45:59 2015.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
-Welcome to PyonCannon's documentation!
-======================================
+Stand clear of the Pyon Cannon!
+===============================
 
 Contents:
 
 .. toctree::
    :maxdepth: 2
 
-
-
-Indices and tables
-==================
-
 * :ref:`genindex`
-* :ref:`modindex`
 * :ref:`search`
 
+Ops from fresh
+==============
+
+* .vimrc file for root
+* modify /etc/skel
+* check /etc/default/useradd
+* /etc/hostname
+* https://wiki.archlinux.org/index.php/General_recommendations
+
+Passwords
+=========
+
+``apg -a 0 -m12``
+
+Admin user
+==========
+
+::
+
+    useradd --user-group --create-home devops
+    useradd devops sudo
