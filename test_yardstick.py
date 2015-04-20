@@ -18,7 +18,9 @@
 
 from collections import OrderedDict
 import difflib
+import inspect
 from io import StringIO
+import sys
 import textwrap
 import unittest
 
@@ -41,3 +43,8 @@ class VimrcTests(unittest.TestCase):
         differ = difflib.SequenceMatcher(a=VimrcTests.data, b=data)
         print(differ.get_opcodes())
         self.assertAlmostEqual(differ.ratio(), 1.0, delta=0.09)
+
+    def test_module_concatenation(self):
+        print(inspect.getsource(VimrcTests))
+        module = sys.modules[__name__]
+        print(inspect.getsource(module))
