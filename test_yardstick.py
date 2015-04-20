@@ -17,6 +17,7 @@
 # along with turberfield.  If not, see <http://www.gnu.org/licenses/>.
 
 from collections import OrderedDict
+import difflib
 from io import StringIO
 import textwrap
 import unittest
@@ -34,4 +35,9 @@ class VimrcTests(unittest.TestCase):
     """)
 
     def test_top_content(self):
-        self.fail(VimrcTests.data)
+        data = textwrap.dedent("""
+            syntax enable   " enable syntax processing
+        """)
+        differ = difflib.SequenceMatcher(a=VimrcTests.data, b=data)
+        print(differ.get_opcodes())
+        self.assertAlmostEqual(differ.ratio(), 1.0, delta=0.09)
