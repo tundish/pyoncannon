@@ -14,10 +14,18 @@ SSH Access
 
 Set up a `host-only network`_ for the VM.
 
-Log in to the VM as root, and start sshd::
+Log in to the VM as root, and check what services are running::
+
+    # rc-status -s
+    
+If necessary, start sshd::
 
     # service sshd start
     
+Set `sshd` to start on boot::
+
+    # rc-update add sshd default
+
 Find the IP address of the running VM::
 
     # ifconfig eth1
@@ -36,7 +44,6 @@ Test SSH access from the host::
     Enter passphrase for key '.ssh/id_rsa':
     [root@manjaro ~]#
 
-* sshd to start on reboot
 
 Static IP Address
 =================
@@ -45,6 +52,7 @@ Ops from fresh
 ==============
 
 * .vimrc file for root
+* .bashrc ``export EDITOR=vi``
 * modify /etc/skel
 * check /etc/default/useradd
 * /etc/hostname
@@ -64,3 +72,4 @@ Admin user
     useradd devops sudo
     
 .. _host-only network: https://www.virtualbox.org/manual/ch06.html#network_hostonly
+.. _openrc tutorial: http://big-elephants.com/2013-01/writing-your-own-init-scripts/
