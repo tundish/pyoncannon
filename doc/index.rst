@@ -9,6 +9,38 @@ Contents:
 * :ref:`genindex`
 * :ref:`search`
 
+SSH Access
+==========
+
+Set up a `host-only network`_ for the VM.
+
+Log in to the VM as root, and start sshd::
+
+    # service sshd start
+    
+Find the IP address of the running VM::
+
+    # ifconfig eth1
+
+Use the host-accessible IP (192.168.56.101 in this case) to copy your SSH public key into the root account
+of the new VM::
+
+    > cd %HOME%
+    > ssh root@192.168.56.101 "umask 077; test -d .ssh || mkdir .ssh ; cat >> .ssh/authorized_keys || exit 1" < .ssh\id_rsa.pub
+    root@192.168.56.101's password:
+    Authenticated to 192.168.56.101 ([192.168.56.101]:22).
+
+Test SSH access from the host::
+
+    >ssh root@192.168.56.101
+    Enter passphrase for key '.ssh/id_rsa':
+    [root@manjaro ~]#
+
+* sshd to start on reboot
+
+Static IP Address
+=================
+
 Ops from fresh
 ==============
 
@@ -30,3 +62,5 @@ Admin user
 
     useradd --user-group --create-home devops
     useradd devops sudo
+    
+.. _host-only network: https://www.virtualbox.org/manual/ch06.html#network_hostonly
