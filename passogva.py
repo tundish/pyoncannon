@@ -1357,7 +1357,7 @@ def generate_password(minlen = MIN_LENGTH_PASSWORD,
                       maxlen = MAX_LENGTH_PASSWORD):
 
     if (minlen > maxlen):
-        print "minlen minlen is greater than maxlen maxlen\n"
+        print("minlen minlen is greater than maxlen maxlen\n")
         return ('','')
 
 
@@ -1379,7 +1379,7 @@ def generate_password(minlen = MIN_LENGTH_PASSWORD,
 
 
     if (word == "" and (minlen > 0)):
-        print "failed to generate an acceptable random password.\n"
+        print("failed to generate an acceptable random password.\n")
         return ('','')
 
 
@@ -2128,7 +2128,7 @@ def get_syllable(pwlen, saved_pair):
         if not ((rule_broken or _illegal_placement(units_in_syllable))):
             break
 
-    return (syllable, units_in_syllable.values(), saved_pair)
+    return (syllable, list(units_in_syllable.values()), saved_pair)
 
 
 
@@ -2232,4 +2232,4 @@ def _illegal_placement(units):
 
 if __name__ == "__main__":
     word, hyphenated_word = generate_password(6, 8)
-    print "%s (%s)" % (word, hyphenated_word)
+    print("{0} ({1})".format(word, hyphenated_word))
