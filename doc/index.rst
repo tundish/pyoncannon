@@ -13,6 +13,12 @@ Contents:
 * :ref:`genindex`
 * :ref:`search`
 
+Prerequisites
+=============
+
+* Boot Manjaro Net OpenRC in VirtualBox
+* Set up a `host-only network`_ for the VM.
+
 Initialisation file
 ===================
 
@@ -20,14 +26,27 @@ Make a `.ini format`_ file like this::
 
     [DEFAULT]
     hash = #
+
+Obtain the IP address of the host-only network adapter (eg: 192.168.56.1)::
+
+    admin.gw = 192.168.56.1
+
+Pick a permanent address for the VM which is on the same subnet but outside the VirtualBox DHCP
+address pool, (eg: 192.168.56.10 netmask 255.255.255.0)::
+
     admin.net = 192.168.56.10/24
-    admin.gw = 192.168.56.101
+
+Name the device using the admin interface::
+
     admin.if = eth1
+
+::
+
+    private.name = manjarovm
+    public.fqdn =
 
 SSH Access
 ==========
-
-Set up a `host-only network`_ for the VM.
 
 Log in to the VM as root, and check what services are running::
 
@@ -63,28 +82,11 @@ Test SSH access from the host::
 Static IP Address
 =================
 
-Obtain the IP address of the host-only network adapter (eg: 192.168.56.1).
-
-Pick a permanent address for the VM which is on the same subnet but outside the VirtualBox DHCP
-address pool, (eg: 192.168.56.10 netmask 255.255.255.0).
-
-* `Network sequencing`_
-* netifrc_
-
-Change on the fly
+Add configuration
 ~~~~~~~~~~~~~~~~~
 
-Take down the existing link, then apply the new address and bring the interface
-up again::
+Edit /etc/conf.d/net::
 
-    # ip link set eth1 down
-    # ip addr add 192.168.56.10/24 dev eth1
-    # ip link set eth1 up
-
-Edit /etc/conf.d/net
-~~~~~~~~~~~~~~~~~~~~
-
-**This doesn't yet work**::
 
     # vi /etc/conf.d/net
 
@@ -92,10 +94,10 @@ Add the lines::
 
     config_eth0="dhcp"
     config_eth1="192.168.56.10/24"
-    routes_eth1="default via 192.168.56.101"
+    routes_eth1="default via 192.168.56.1"
 
-Add interfaces
-~~~~~~~~~~~~~~
+Activate interfaces
+~~~~~~~~~~~~~~~~~~~
 
 Add interfaces::
 
@@ -103,19 +105,27 @@ Add interfaces::
     # ln -s net.lo net.eth0
     # ln -s net.lo net.eth1
 
-Then::
+Then transfer control of networking to netifrc_::
 
     # rc-update del NetworkManager
+    # rc-update add net.eth0 default
+    # rc-update add net.eth1 default
+
+Reboot::
+
+    # /sbin/shutdown -r now
 
 Ops from fresh
 ==============
 
+* ntp-client
 * .vimrc file for root
 * .bashrc ``export EDITOR=vi``
 * modify /etc/skel
 * check /etc/default/useradd
 * /etc/hostname
 * https://wiki.archlinux.org/index.php/General_recommendations
+* /etc/conf.d/xdm deactivation.
 
 Passwords
 =========
@@ -129,6 +139,13 @@ Devops user
 
     useradd --user-group --create-home devops
     useradd devops sudo
+
+References
+==========
+
+* `openrc tutorial`_
+* `network sequencing`_
+* netifrc_
 
 .. _.ini format: https://docs.python.org/3/library/configparser.html#supported-ini-file-structure    
 .. _host-only network: https://www.virtualbox.org/manual/ch06.html#network_hostonly
