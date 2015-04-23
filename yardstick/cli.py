@@ -135,7 +135,7 @@ def main(module, args, name="yardstick"):
     if args.debug:
         os.environ["EXECNET_DEBUG"] = "2"
 
-    gw = execnet.makegateway()
+    gw = execnet.makegateway(s)
     try:
         ch = gw.remote_exec(module)
         ch.send(config)
