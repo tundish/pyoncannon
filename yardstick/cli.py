@@ -22,6 +22,7 @@ from getpass import getpass
 import ipaddress
 import logging
 import logging.handlers
+import os
 import os.path
 import subprocess
 import sys
@@ -67,7 +68,7 @@ def execnet_string(ini, args):
     settings = config_settings(ini)
     port = args.port or settings["admin.port"] or DFLT_PORT
     user = args.user or settings["admin.user"] or DFLT_USER
-    host = args.host or ipaddress.ip_interface(settings["admin.net"])
+    host = args.host or ipaddress.ip_interface(settings["admin.net"]).ip
     python = args.python or settings["admin.python"] or sys.executable
 
     #"//python=/home/{user}/{0.venv}/bin/python").format(
@@ -130,6 +131,9 @@ def main(args, name="yardstick"):
     if s.startswith("popen"):
         log.warning("Local invocation.")
 
+    if args.debug:
+        os.environ["EXECNET_DEBUG"] = "2"
+
     gw = execnet.makegateway()
     try:
         ch = gw.remote_exec(sys.modules[__name__]) # Collect fragments with inspect
@@ -173,15 +177,18 @@ def parser(description=__doc__):
         help="Specify the Python executable on the remote host")
     rv.add_argument(
         "--identity", default=DFLT_IDENTITY,
-        help="Specify the path to a SSH private key file [{}]".format(
+        help="Specify the path to a local SSH private key file ['{}']".format(
             DFLT_IDENTITY
         ))
     rv.add_argument(
-        "-f", "--forget", action="store_true", default=False,
-        help="remove hosts from file {}".format(KNOWN_HOSTS))
+        "--forget", action="store_true", default=False,
+        help="Remove hosts from the file '{}'".format(KNOWN_HOSTS))
     rv.add_argument(
         "--version", action="store_true", default=False,
         help="Print the current version number")
+    rv.add_argument(
+        "--debug", action="store_true", default=False,
+        help="Print wire-level messages for debugging")
     rv.add_argument(
         "-v", "--verbose", required=False,
         action="store_const", dest="log_level",
