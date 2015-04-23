@@ -26,10 +26,10 @@ Checks the remote access configuration on a node.
 
 import inspect
 import logging
-import textwrap
 import platform
 import subprocess
 import sys
+import textwrap
 import unittest
 
 try:
@@ -38,69 +38,17 @@ except ImportError:
     # Remote host
     __version__ = None
 
-        
-class OpenSSHChecks(unittest.TestCase):
-    """
-    https://help.ubuntu.com/community/SSH/OpenSSH/Configuring
-    """
-    def test_initial_config_copied_to_ref(self):
-        st = os.stat("/etc/ssh/sshd_config")
-        self.assertTrue(os.path.isfile("/etc/ssh/sshd_config.ref"))
+imports = [
+    "ast", "collections", "csv", "configparser", "ctypes", "datetime",
+    "difflib", "errno", "filecmp", "glob", "grp", "gzip", "hashlib",
+    "html", "inspect", "ipaddress", "json", "locale", "linecache", "os",
+    "pathlib", "platform", "posix", "random", "re", "resource", "shlex",
+    "shutil", "signal", "site", "string", "struct", "stat", "subprocess",
+    "sys", "sysconfig", "syslog", "tarfile", "tempfile", "time", "timeit",
+    "types", "textwrap", "unicodedata", "uuid", "unittest", "venv",
+    "warnings", "xml", "zipfile", "zlib" 
+]
 
-    def test_sshd_on_defined_port(self):
-        cfg = open("/etc/ssh/sshd_config").read()
-        port = self.defn["sshd.port"]
-        self.assertEqual(1, cfg.count("Port"))
-        self.assertIn("Port {}".format(port), cfg)
-
-    def test_sshd_port_not_claimed(self):
-        svcs = open("/etc/services").read()
-        port = self.defn["sshd.port"]
-        self.assertNotIn(port, svcs)
-
-    def test_keybased_authentication_is_enabled(self):
-        cfg = open("/etc/ssh/sshd_config").read()
-        self.assertEqual(1, cfg.count("\nRSAAuthentication"))
-        self.assertEqual(1, cfg.count("\nPubkeyAuthentication"))
-        self.assertIn("RSAAuthentication yes", cfg)
-        self.assertIn("PubkeyAuthentication yes", cfg)
-
-    def test_forwarding_is_disabled(self):
-        cfg = open("/etc/ssh/sshd_config").read()
-        self.assertEqual(1, cfg.count("AllowTcpForwarding"))
-        self.assertEqual(1, cfg.count("X11Forwarding"))
-        self.assertIn("AllowTcpForwarding no", cfg)
-        self.assertIn("X11Forwarding no", cfg)
-
-    def test_verbose_logging(self):
-        cfg = open("/etc/ssh/sshd_config").read()
-        self.assertEqual(1, cfg.count("LogLevel"))
-        self.assertIn("LogLevel VERBOSE", cfg)
-
-    def test_group_permission(self):
-        cfg = open("/etc/ssh/sshd_config").read()
-        self.assertEqual(1, cfg.count("AllowUsers"))
-        self.assertIn("AllowUsers {}\n".format(self.defn["admin"]), cfg)
-
-    def test_root_login(self):
-        cfg = open("/etc/ssh/sshd_config").read()
-        self.assertEqual(1, cfg.count("PermitRootLogin"))
-        self.assertIn("PermitRootLogin no", cfg)
-
-    def test_admin_user_has_public_key(self):
-        auth_keys = os.path.join(
-            os.path.expanduser("~{}".format(self.defn["admin"])),
-            ".ssh", "authorized_keys")
-        self.assertTrue(os.path.isfile(auth_keys))
-        self.assertEqual(1, len(open(auth_keys).readlines()))
-
-def imports():
-    import os
-    import inspect
-    import platform
-    import subprocess
-    import sys
-    import unittest
 
 def operate(class_):
     try:
@@ -124,9 +72,6 @@ def operate(class_):
     finally:
         channel.send(None)
 
-if __name__ == "__channelexec__":
-    operate(OpenSSHChecks)
-
 
 if __name__ == "__main__":
     from yardstick.cli import log_setup # Move
@@ -147,11 +92,11 @@ if __name__ == "__main__":
         }
 
         for class_ in testClasses:
-            importsLines, nr = inspect.getsourcelines(imports)
             operateLines, nr = inspect.getsourcelines(operate)
             operateLines[0] = 'if __name__ == "__channelexec__":\n'
             text = "\n".join((
-                textwrap.dedent("".join(importsLines[1:])),
+                "\n".join("import {}".format(i) for i in imports),
+                "",
                 inspect.getsource(class_),
                 "".join(operateLines).replace("class_", class_.__name__)
             ))
