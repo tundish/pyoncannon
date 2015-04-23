@@ -49,6 +49,19 @@ https://docs.python.org/3/library/argparse.html#fromfile-prefix-chars
 This gives a way of 'baking in' certain options to suit particular environments
 or configurations of the system.
 
+eg::
+
+    cloudhands-orgadmin \\
+    --host=jasmin-cloud.jc.rl.ac.uk --identity=~/.ssh/id_rsa-jasminvm \\
+    --db=/home/jasminuser/jasmin-web.sl3 \\
+    --account=denderby \\
+    --email=dominic.enderby@contractor.net \\
+    --surname=enderby \\
+    --organisation=STFCloud \\
+    --public=172.16.151.170/30 \\
+    --activator=/root/bootstrap.sh \\
+    --providers=cloudhands.jasmin.vcloud.phase04.cfg
+
 """
 
 DFLT_PORT = 22
@@ -105,25 +118,17 @@ def parser(description=__doc__):
         fromfile_prefix_chars="@"
     )
     rv.add_argument(
-        "--version", action="store_true", default=False,
-        help="Print the current version number")
-    rv.add_argument(
-        "-v", "--verbose", required=False,
-        action="store_const", dest="log_level",
-        const=logging.DEBUG, default=logging.INFO,
-        help="Increase the verbosity of output")
-    rv.add_argument(
         "--host", required=True,
         help="Specify the name of the remote host")
     rv.add_argument(
         "--port", type=int, default=DFLT_PORT,
-        help="Set the port number [{}]".format(DFLT_PORT))
+        help="Set the port number [{}] to the host".format(DFLT_PORT))
     rv.add_argument(
         "--user", default=DFLT_USER,
-        help="Specify the login user [{}]".format(DFLT_USER))
+        help="Specify the user login [{}] on the host".format(DFLT_USER))
     rv.add_argument(
         "--venv", default=DFLT_VENV,
-        help="Specify the Python environment on the remote host [{}]".format(
+        help="Specify the Python environment [{}] on the remote host".format(
             DFLT_VENV)
         )
     rv.add_argument(
@@ -131,7 +136,18 @@ def parser(description=__doc__):
         help="Set the path to the database [{}]".format(DFLT_DB))
     rv.add_argument(
         "--identity", default="",
-        help="Specify the path to an SSH public key file")
+        help="Specify the path to a SSH public key file authorised on the host")
+
+    # Extra arguments here
+
+    rv.add_argument(
+        "--version", action="store_true", default=False,
+        help="Print the current version number")
+    rv.add_argument(
+        "-v", "--verbose", required=False,
+        action="store_const", dest="log_level",
+        const=logging.DEBUG, default=logging.INFO,
+        help="Increase the verbosity of output")
     rv.add_argument(
         "--log", default=None, dest="log_path",
         help="Set a file path for log output")
