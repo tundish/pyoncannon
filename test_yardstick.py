@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # encoding: UTF-8
 
-# This file is part of turberfield.
+# This file is part of pyoncannon.
 #
 # Turberfield is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published
@@ -14,7 +14,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with turberfield.  If not, see <http://www.gnu.org/licenses/>.
+# along with pyoncannon.  If not, see <http://www.gnu.org/licenses/>.
 
 from collections import OrderedDict
 import difflib
@@ -48,3 +48,5 @@ class VimrcTests(unittest.TestCase):
         print(inspect.getsource(VimrcTests))
         module = sys.modules[__name__]
         print(inspect.getsource(module))
+        #print([i for i in sys.modules if i not in sys.builtin_module_names])
+        print([i for i in sys.modules if i not in __builtins__])
