@@ -159,6 +159,8 @@ def main(module, args, name="yardstick"):
     return rv
 
 
+# TODO: add failfast
+# TODO: add test package option
 def parser(description=__doc__):
     rv = argparse.ArgumentParser(
         description,

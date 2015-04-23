@@ -21,7 +21,7 @@ Checks the remote access configuration on a node.
 
 ::
 
-    check_access.py < demo/manjaro_openrc_net-virtualbox.ini
+    main.py < demo/manjaro_openrc_net-virtualbox.ini
 """
 
 import inspect
@@ -41,7 +41,7 @@ except ImportError:
 imports = [
     "ast", "collections", "csv", "configparser", "ctypes", "datetime",
     "difflib", "errno", "filecmp", "glob", "grp", "gzip", "hashlib",
-    "html", "inspect", "ipaddress", "json", "locale", "linecache", "os",
+    "html", "inspect", "io", "ipaddress", "json", "locale", "linecache", "os",
     "pathlib", "platform", "posix", "random", "re", "resource", "shlex",
     "shutil", "signal", "site", "string", "struct", "stat", "subprocess",
     "sys", "sysconfig", "syslog", "tarfile", "tempfile", "time", "timeit",
