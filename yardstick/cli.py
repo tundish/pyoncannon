@@ -44,6 +44,8 @@ on remote hosts.
 """
 
 DFLT_IDENTITY = os.path.expanduser(os.path.join("~", ".ssh", "id_rsa"))
+DFLT_PORT = 22
+DFLT_USER = "root"
 KNOWN_HOSTS = os.path.expanduser(os.path.join("~", ".ssh", "known_hosts"))
 
 
@@ -53,6 +55,8 @@ def forget_host(host):
 def config_parser():
     return configparser.ConfigParser(
         strict=True,
+        empty_lines_in_values=True,
+        allow_no_value=True,
         interpolation=configparser.ExtendedInterpolation()
     )
 
@@ -61,7 +65,18 @@ def config_settings(ini):
     return ini.defaults()
 
 def execnet_string(ini, args):
-    return ""
+    settings = config_settings(ini)
+    port = args.port or settings["admin.port"] or DFLT_PORT
+    user = args.user or settings["admin.user"] or DFLT_USER
+    host = args.host or ipaddress.ip_interface(settings["admin.net"])
+    if host in (None, "127.0.0.1"):
+        rv = "popen//dont_write_bytecode"
+    else:
+        rv = ("ssh=-i {identity} -p {port} {user}@{host}"
+         "//python=/home/{user}/{0.venv}/bin/python").format(
+        args, identity=os.path.expanduser(args.identity),
+        host=host, port=port, user=user)
+    return rv
 
 def log_setup(args, name="yardstick"):
     log = logging.getLogger(name)
@@ -88,13 +103,16 @@ def log_setup(args, name="yardstick"):
 def main(args, name="yardstick"):
     log = logging.getLogger(name)
 
+    if sys.stdin in args.ini:
+        log.info("Accepting stream input.")
+
     ini = config_parser()
     ini.read_string('\n'.join(i.read() for i in args.ini))
     settings = config_settings(ini)
 
     if ini.sections():
         sudoPass = getpass(
-            "Enter sudo password for {}:".format(settings["private.user"]))
+            "Enter sudo password for {}:".format(settings["admin.user"]))
     else:
         sudoPass = None
 
@@ -106,7 +124,7 @@ def main(args, name="yardstick"):
     s = ("ssh=-i {identity} -p {0.port} {0.user}@{0.host}"
          "//python=/home/{0.user}/{0.venv}/bin/python").format(
         args, identity=os.path.expanduser(args.identity))
-    gw = execnet.makegateway(s)
+    gw = execnet.makegateway(execnet_string(ini, args))
     try:
         ch = gw.remote_exec(sys.modules[__name__]) # Collect fragments with inspect
         # send .ini as string
