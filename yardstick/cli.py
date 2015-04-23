@@ -23,7 +23,6 @@ import ipaddress
 import logging
 import logging.handlers
 import os.path
-import platform
 import subprocess
 import sys
 
@@ -69,13 +68,17 @@ def execnet_string(ini, args):
     port = args.port or settings["admin.port"] or DFLT_PORT
     user = args.user or settings["admin.user"] or DFLT_USER
     host = args.host or ipaddress.ip_interface(settings["admin.net"])
-    if host in (None, "127.0.0.1"):
+    python = args.python or settings["admin.python"] or sys.executable
+
+    #"//python=/home/{user}/{0.venv}/bin/python").format(
+    if host in (None, "0.0.0.0", "127.0.0.1", "localhost"):
         rv = "popen//dont_write_bytecode"
     else:
         rv = ("ssh=-i {identity} -p {port} {user}@{host}"
-         "//python=/home/{user}/{0.venv}/bin/python").format(
-        args, identity=os.path.expanduser(args.identity),
-        host=host, port=port, user=user)
+         "//python={python}").format(
+            identity=os.path.expanduser(args.identity),
+            host=host, port=port, user=user, python=python
+        )
     return rv
 
 def log_setup(args, name="yardstick"):
@@ -107,40 +110,48 @@ def main(args, name="yardstick"):
         log.info("Accepting stream input.")
 
     ini = config_parser()
-    ini.read_string('\n'.join(i.read() for i in args.ini))
+    config = '\n'.join(i.read() for i in args.ini)
+    ini.read_string(config)
     settings = config_settings(ini)
 
     if ini.sections():
-        sudoPass = getpass(
+        sudoPwd = getpass(
             "Enter sudo password for {}:".format(settings["admin.user"]))
     else:
-        sudoPass = None
+        sudoPwd = None
 
     if args.forget:
         host = ipaddress.ip_interface(settings["admin.net"])
         forget_host(host.ip.compressed)
         forget_host(host.ip.exploded)
 
-    s = ("ssh=-i {identity} -p {0.port} {0.user}@{0.host}"
-         "//python=/home/{0.user}/{0.venv}/bin/python").format(
-        args, identity=os.path.expanduser(args.identity))
-    gw = execnet.makegateway(execnet_string(ini, args))
+    rv = 0
+    s = execnet_string(ini, args)
+    if s.startswith("popen"):
+        log.warning("Local invocation.")
+
+    gw = execnet.makegateway()
     try:
         ch = gw.remote_exec(sys.modules[__name__]) # Collect fragments with inspect
-        # send .ini as string
-        ch.send(vars(args))
+        ch.send(config)
+        ch.send({k: v for k, v in vars(args).items() if not isinstance(v, list)})
+        ch.send(sudoPwd)
 
         msg = ch.receive()
         while msg is not None:
             log.info(msg)
             msg = ch.receive()
 
-    except OSError as e:
+    except (EOFError, OSError) as e:
         log.error(s)
-        log.error(e)
+        rv = 1
+    except (Error, Exception) as e:
+        log.error(getattr(e, "args", e) or e)
+        rv = 1
     finally:
         gw.exit()
-    return 0
+
+    return rv
 
 
 def parser(description=__doc__):
@@ -158,8 +169,8 @@ def parser(description=__doc__):
         "--user", required=False,
         help="Specify the user login on the host")
     rv.add_argument(
-        "--venv", required=False,
-        help="Specify the Python environment on the remote host")
+        "--python", required=False,
+        help="Specify the Python executable on the remote host")
     rv.add_argument(
         "--identity", default=DFLT_IDENTITY,
         help="Specify the path to a SSH private key file [{}]".format(
@@ -185,23 +196,3 @@ def parser(description=__doc__):
         help="Specify one or more .ini files to process "
         "(or else read stdin).")
     return rv
-
-
-def run():
-    p = parser()
-    args = p.parse_args()
-    if args.version:
-        sys.stdout.write(__version__ + "\n")
-        rv = 0
-    else:
-        rv = main(args)
-    sys.exit(rv)
-
-if __name__ == "__main__":
-    run()
-
-if __name__ == "__channelexec__":
-    channel.send("Executing remotely from {}.".format(platform.node()))
-    args = channel.receive()
-    channel.send("Received args {}.".format(args))
-    channel.send(None)

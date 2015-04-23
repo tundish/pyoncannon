@@ -24,24 +24,24 @@ Checks the remote access configuration on a node.
 
 ::
 
-    check_access.py -p 22 -c topicmob/ops/inventory.cfg
+    check_access.py < demo/manjaro_openrc_net-virtualbox.ini
 """
 
 import os
 import logging
+import platform
 import subprocess
 import sys
 import unittest as nodetest
 
-class ChecksUseDefinition(object):
+try:
+    from yardstick import __version__
+except ImportError:
+    # Remote host
+    __version__ = None
 
-    defn = None
         
-class ChecksUseSudo(object):
-
-    sudoPass = None
-        
-class OpenSSHChecks(nodetest.TestCase, ChecksUseDefinition):
+class OpenSSHChecks(nodetest.TestCase):
     """
     https://help.ubuntu.com/community/SSH/OpenSSH/Configuring
     """
@@ -96,17 +96,28 @@ class OpenSSHChecks(nodetest.TestCase, ChecksUseDefinition):
         self.assertTrue(os.path.isfile(auth_keys))
         self.assertEqual(1, len(open(auth_keys).readlines()))
 
+
 if __name__ == "__channelexec__":
-    ChecksUseDefinition.defn = channel.receive()
-    ChecksUseSudo.sudoPass = channel.receive()
-    ldr = nodetest.defaultTestLoader
-    suite = ldr.loadTestsFromTestCase(OpenSSHChecks)
-    runner = nodetest.TextTestRunner(resultclass=nodetest.TestResult)
-    rlt = runner.run(suite)
-    rv = {a: [i[1] for i in getattr(rlt, a)]
-            for a in ("errors", "failures", "skipped")}
-    rv["total"] = rlt.testsRun
-    channel.send(rv)
+    try:
+        channel.send("Executing from {}.".format(platform.node()))
+        OpenSSHChecks.ini = channel.receive()
+        OpenSSHChecks.args = channel.receive()
+        OpenSSHChecks.sudoPwd = channel.receive()
+        ldr = nodetest.defaultTestLoader
+        suite = ldr.loadTestsFromTestCase(OpenSSHChecks)
+        runner = nodetest.TextTestRunner(resultclass=nodetest.TestResult)
+        rlt = runner.run(suite)
+        rv = {a: [i[1] for i in getattr(rlt, a)]
+                for a in ("errors", "failures", "skipped")}
+        rv["total"] = rlt.testsRun
+        channel.send(rv)
+    except (EOFError, OSError) as e:
+        channel.send(getattr(e, "args", e) or e)
+    except (Error, Exception) as e:
+        channel.send(getattr(e, "args", e) or e)
+    finally:
+        channel.send(None)
+
 
 if __name__ == "__main__":
     from yardstick.cli import log_setup # Move
@@ -116,7 +127,11 @@ if __name__ == "__main__":
     p = parser()
     args = p.parse_args()
     logName = log_setup(args, "check_access")
-    rv = main(args, logName)
+    if args.version:
+        sys.stdout.write(__version__ + "\n")
+        rv = 0
+    else:
+        rv = main(args, logName)
 
     #module = sys.modules[__name__]
     #for n, defn in enumerate(definitions(args.config)):
