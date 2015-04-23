@@ -112,9 +112,9 @@ if __name__ == "__channelexec__":
         rv["total"] = rlt.testsRun
         channel.send(rv)
     except (EOFError, OSError) as e:
-        channel.send(getattr(e, "args", e) or e)
+        channel.send(str(getattr(e, "args", e) or e))
     except (Error, Exception) as e:
-        channel.send(getattr(e, "args", e) or e)
+        channel.send(str(getattr(e, "args", e) or e))
     finally:
         channel.send(None)
 
@@ -131,10 +131,18 @@ if __name__ == "__main__":
         sys.stdout.write(__version__ + "\n")
         rv = 0
     else:
-        rv = main(args, logName)
+        module = sys.modules[__name__]
+        rv = main(module, args, logName)
+        print("\n")
+        print(
+            *[i for a in ("skipped", "failures", "errors")
+                for i in rv[a]],
+            sep="\n"
+        )
+        print("Total: {}".format(rv["total"]))
 
     #module = sys.modules[__name__]
     #for n, defn in enumerate(definitions(args.config)):
     #     with TestSession(module, defn, idn=n) as session:
     #         rv = session.operate()
-    sys.exit(rv)
+    sys.exit(1 if rv is None else 0)

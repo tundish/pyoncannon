@@ -104,7 +104,7 @@ def log_setup(args, name="yardstick"):
     log.addHandler(ch)
     return name
 
-def main(args, name="yardstick"):
+def main(module, args, name="yardstick"):
     log = logging.getLogger(name)
 
     if sys.stdin in args.ini:
@@ -126,8 +126,9 @@ def main(args, name="yardstick"):
         forget_host(host.ip.compressed)
         forget_host(host.ip.exploded)
 
-    rv = 0
+    rv = None
     s = execnet_string(ini, args)
+    log.debug(s)
     if s.startswith("popen"):
         log.warning("Local invocation.")
 
@@ -136,22 +137,22 @@ def main(args, name="yardstick"):
 
     gw = execnet.makegateway()
     try:
-        ch = gw.remote_exec(sys.modules[__name__]) # Collect fragments with inspect
+        ch = gw.remote_exec(module)
         ch.send(config)
         ch.send({k: v for k, v in vars(args).items() if not isinstance(v, list)})
         ch.send(sudoPwd)
 
         msg = ch.receive()
         while msg is not None:
-            log.info(msg)
-            msg = ch.receive()
+            log.debug(msg) # TODO: msg types, levels
+            prev, msg = msg, ch.receive()
+        else:
+            rv = prev
 
     except (EOFError, OSError) as e:
         log.error(s)
-        rv = 1
     except (Error, Exception) as e:
         log.error(getattr(e, "args", e) or e)
-        rv = 1
     finally:
         gw.exit()
 
