@@ -1,14 +1,30 @@
 #!/usr/bin/env python3
 # encoding: UTF-8
 
-# Copyright 2013 D Haynes
+# This file is part of pyoncannon.
+#
+# Turberfield is free software: you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published
+# by the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Turberfield is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with pyoncannon.  If not, see <http://www.gnu.org/licenses/>.
 
+from collections import OrderedDict
+import difflib
+import inspect
 __doc__ = """
 Checks the remote access configuration on a node.
 
 ::
 
-    topicmob/ops/scripts/check_access.py -p 22 -c topicmob/ops/inventory.cfg
+    check_access.py -p 22 -c topicmob/ops/inventory.cfg
 """
 
 import os
@@ -93,25 +109,17 @@ if __name__ == "__channelexec__":
     channel.send(rv)
 
 if __name__ == "__main__":
-    from topicmob.ops.config import definitions
-    from topicmob.ops.deploy import Status
-    from topicmob.ops.netexec import Logger
-    from topicmob.ops.netexec import TestSession
-    from topicmob.ops.netexec import parser
+    from yardstick.cli import log_setup # Move
+    from yardstick.cli import main
+    from yardstick.cli import parser
+
     p = parser()
     args = p.parse_args()
+    logName = log_setup(args, "check_access")
+    rv = main(args, logName)
 
-    Logger.severity = {
-            Status.ok: logging.INFO,
-            Status.blocked: logging.WARNING,
-            Status.stopped: logging.INFO,
-            Status.error: logging.ERROR,
-            Status.timedout: logging.WARNING,
-            Status.failed: logging.WARNING}
-    Logger.threshold = args.log_level
-
-    module = sys.modules[__name__]
-    for n, defn in enumerate(definitions(args.config)):
-        with TestSession(module, defn, idn=n) as session:
-            rv = session.operate()
+    #module = sys.modules[__name__]
+    #for n, defn in enumerate(definitions(args.config)):
+    #     with TestSession(module, defn, idn=n) as session:
+    #         rv = session.operate()
     sys.exit(rv)
