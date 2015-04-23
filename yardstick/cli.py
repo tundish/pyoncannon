@@ -17,6 +17,9 @@
 # along with pyoncannon.  If not, see <http://www.gnu.org/licenses/>.
 
 import argparse
+import configparser
+from getpass import getpass
+import ipaddress
 import logging
 import logging.handlers
 import os.path
@@ -47,6 +50,16 @@ KNOWN_HOSTS = os.path.expanduser(os.path.join("~", ".ssh", "known_hosts"))
 def forget_host(host):
     subprocess.check_call(["ssh-keygen", "-f", KNOWN_HOSTS, "-R", host])
 
+def config_parser():
+    return configparser.ConfigParser(
+        strict=True,
+        interpolation=configparser.ExtendedInterpolation()
+    )
+
+def config_settings(ini):
+    # TODO: check defaults section
+    return ini.defaults()
+
 def execnet_string(ini, args):
     return ""
 
@@ -75,16 +88,21 @@ def log_setup(args, name="yardstick"):
 def main(args, name="yardstick"):
     log = logging.getLogger(name)
 
-    #if self.askPass:
-    #    self.sudoPass = getpass(
-    #        "Enter sudo password for {}:".format(user))
-    #else:
-    #    self.sudoPass = None
+    ini = config_parser()
+    ini.read_string('\n'.join(i.read() for i in args.ini))
+    settings = config_settings(ini)
 
-    #if not self.rememberHosts:
-    #    forget_host(str(host))
+    if ini.sections():
+        sudoPass = getpass(
+            "Enter sudo password for {}:".format(settings["private.user"]))
+    else:
+        sudoPass = None
 
-    log.warning(args)
+    if args.forget:
+        host = ipaddress.ip_interface(settings["admin.net"])
+        forget_host(host.ip.compressed)
+        forget_host(host.ip.exploded)
+
     s = ("ssh=-i {identity} -p {0.port} {0.user}@{0.host}"
          "//python=/home/{0.user}/{0.venv}/bin/python").format(
         args, identity=os.path.expanduser(args.identity))
@@ -145,7 +163,7 @@ def parser(description=__doc__):
         help="Set a file path for log output")
     rv.add_argument(
         "ini", nargs="*",
-        type=argparse.FileType('r'), default=sys.stdin,
+        type=argparse.FileType('r'), default=[sys.stdin],
         help="Specify one or more .ini files to process "
         "(or else read stdin).")
     return rv
