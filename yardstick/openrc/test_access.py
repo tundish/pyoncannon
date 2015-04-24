@@ -33,8 +33,8 @@ import unittest
 class OpenSSHChecks(unittest.TestCase):
     """
     https://help.ubuntu.com/community/SSH/OpenSSH/Configuring
+
     """
-    #TODO: add sudoPass, etc
 
     def test_initial_config_copied_to_ref(self):
         st = os.stat("/etc/ssh/sshd_config")
@@ -42,13 +42,13 @@ class OpenSSHChecks(unittest.TestCase):
 
     def test_sshd_on_defined_port(self):
         cfg = open("/etc/ssh/sshd_config").read()
-        port = self.defn["sshd.port"]
+        port = self.ini["admin.port"]
         self.assertEqual(1, cfg.count("Port"))
         self.assertIn("Port {}".format(port), cfg)
 
     def test_sshd_port_not_claimed(self):
         svcs = open("/etc/services").read()
-        port = self.defn["sshd.port"]
+        port = self.ini["admin.port"]
         self.assertNotIn(port, svcs)
 
     def test_keybased_authentication_is_enabled(self):
@@ -73,7 +73,7 @@ class OpenSSHChecks(unittest.TestCase):
     def test_group_permission(self):
         cfg = open("/etc/ssh/sshd_config").read()
         self.assertEqual(1, cfg.count("AllowUsers"))
-        self.assertIn("AllowUsers {}\n".format(self.defn["admin"]), cfg)
+        self.assertIn("AllowUsers {}\n".format(self.ini["admin.user"]), cfg)
 
     def test_root_login(self):
         cfg = open("/etc/ssh/sshd_config").read()
@@ -82,7 +82,7 @@ class OpenSSHChecks(unittest.TestCase):
 
     def test_admin_user_has_public_key(self):
         auth_keys = os.path.join(
-            os.path.expanduser("~{}".format(self.defn["admin"])),
+            os.path.expanduser("~{}".format(self.ini["admin.user"])),
             ".ssh", "authorized_keys")
         self.assertTrue(os.path.isfile(auth_keys))
         self.assertEqual(1, len(open(auth_keys).readlines()))

@@ -17,7 +17,6 @@
 # along with pyoncannon.  If not, see <http://www.gnu.org/licenses/>.
 
 import argparse
-import configparser
 from getpass import getpass
 import inspect
 import ipaddress
@@ -27,6 +26,7 @@ import os
 import os.path
 import subprocess
 import sys
+import time
 import unittest
 
 import execnet
@@ -53,20 +53,9 @@ KNOWN_HOSTS = os.path.expanduser(os.path.join("~", ".ssh", "known_hosts"))
 def forget_host(host):
     subprocess.check_call(["ssh-keygen", "-f", KNOWN_HOSTS, "-R", host])
 
-def config_parser():
-    return configparser.ConfigParser(
-        strict=True,
-        empty_lines_in_values=True,
-        allow_no_value=True,
-        interpolation=configparser.ExtendedInterpolation()
-    )
-
-def config_settings(ini):
-    # TODO: check defaults section
-    return ini.defaults()
 
 def execnet_string(ini, args):
-    settings = config_settings(ini)
+    settings = yardstick.composition.config_settings(ini)
     port = args.port or settings["admin.port"] or DFLT_PORT
     user = args.user or settings["admin.user"] or DFLT_USER
     host = args.host or ipaddress.ip_interface(settings["admin.net"]).ip
@@ -124,7 +113,8 @@ def gen_check_tasks(args):
                       for i in yardstick.composition.imports),
             "",
             inspect.getsource(class_),
-            inspect.getsource(yardstick.base.config_parser),
+            inspect.getsource(yardstick.composition.config_parser),
+            inspect.getsource(yardstick.composition.config_settings),
             "".join(checkLines).replace("class_", class_.__name__)
         ))
         yield text
@@ -135,10 +125,10 @@ def operate(text, args, name="yardstick"):
     if sys.stdin in args.ini:
         log.info("Accepting stream input.")
 
-    ini = config_parser()
+    ini = yardstick.composition.config_parser()
     config = '\n'.join(i.read() for i in args.ini)
     ini.read_string(config)
-    settings = config_settings(ini)
+    settings = yardstick.composition.config_settings(ini)
 
     if ini.sections():
         sudoPwd = getpass(
@@ -166,6 +156,7 @@ def operate(text, args, name="yardstick"):
         ch.send(config)
         ch.send({k: v for k, v in vars(args).items() if not isinstance(v, list)})
         ch.send(sudoPwd)
+        ch.send(time.time())
 
         msg = ch.receive()
         while msg is not None:

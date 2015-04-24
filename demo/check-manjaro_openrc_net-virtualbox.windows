@@ -1,3 +1,4 @@
+-v
 check
 --ini
 demo\manjaro_openrc_net-virtualbox.ini
