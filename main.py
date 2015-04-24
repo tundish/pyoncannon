@@ -74,13 +74,15 @@ def operate(class_):
 
 
 if __name__ == "__main__":
-    from yardstick.cli import log_setup # Move
-    from yardstick.cli import main
-    from yardstick.cli import parser
+    import yardstick.cli
 
-    p = parser()
+    p, subs = yardstick.cli.parsers()
+    yardstick.cli.add_auto_command_parser(subs)
+    yardstick.cli.add_check_command_parser(subs)
+    yardstick.cli.add_units_command_parser(subs)
     args = p.parse_args()
-    logName = log_setup(args, "check_access")
+
+    logName = yardstick.cli.log_setup(args, "check_access")
     if args.version:
         sys.stdout.write(__version__ + "\n")
         rv = 0
@@ -101,7 +103,7 @@ if __name__ == "__main__":
                 "".join(operateLines).replace("class_", class_.__name__)
             ))
             print(text)
-            rv = main(text, args, logName)
+            rv = yardstick.cli.main(text, args, logName)
             print("\n")
             print(
                 *[i for a in ("skipped", "failures", "errors")

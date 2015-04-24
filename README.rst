@@ -15,13 +15,13 @@ Yardstick
 
 .. todo:: CLI
 
-Simple measure::
+Simple check::
 
-    yardstick measure --ini manjaro_openrc_net-virtualbox.ini --paths yardstick/openrc/test_*.py
+    yardstick check --ini manjaro_openrc_net-virtualbox.ini --paths yardstick/openrc/test_*.py
 
-Simple measure::
+Simple check::
 
-    yardstick measure --ini manjaro_openrc_net-virtualbox.ini --modules yardstick.openrc.test_access
+    yardstick check --ini manjaro_openrc_net-virtualbox.ini --modules yardstick.openrc.test_access
 
 Discover available tags::
 

@@ -36,10 +36,12 @@ except ImportError:
 
 __doc__ = """
 
-This module contains boilerplate for devops utilities.
+The yardstick program supports system administration of remote nodes.
 
-It's your starting point for command-line tools which invoke Python functions
-on remote hosts.
+It lets you select and launch:
+
+* tests written in Python
+* automated jobs controlled by a `.ini` file
 
 """
 
@@ -158,9 +160,6 @@ def main(module, args, name="yardstick"):
 
     return rv
 
-
-# TODO: add failfast
-# TODO: add test package option
 def parser(description=__doc__):
     rv = argparse.ArgumentParser(
         description,
@@ -206,3 +205,98 @@ def parser(description=__doc__):
         help="Specify one or more .ini files to process "
         "(or else read stdin).")
     return rv
+
+# TODO: add test package option
+def parsers(description=__doc__):
+    parser = argparse.ArgumentParser(
+        description,
+        fromfile_prefix_chars="@"
+    )
+    parser.add_argument(
+        "--version", action="store_true", default=False,
+        help="Print the current version number")
+    parser.add_argument(
+        "-v", "--verbose", required=False,
+        action="store_const", dest="log_level",
+        const=logging.DEBUG, default=logging.INFO,
+        help="Increase the verbosity of output")
+    parser.add_argument(
+        "--log", default=None, dest="log_path",
+        help="Set a file path for log output")
+    parser.add_argument(
+        "--ini", nargs="*",
+        type=argparse.FileType('r'), default=[sys.stdin],
+        help="Specify one or more .ini files to process "
+        "(or else read stdin).")
+
+    subparsers = parser.add_subparsers(
+        dest="command"
+    )
+    return (parser, subparsers)
+
+
+def add_auto_command_parser(subparsers):
+    rv = subparsers.add_parser(
+        "auto", help="Run jobs which modify the target."
+    )
+    rv.add_argument(
+        "--host", required=False,
+        help="Specify the name of the remote host")
+    rv.add_argument(
+        "--port", type=int, required=False,
+        help="Set the port number to the host")
+    rv.add_argument(
+        "--user", required=False,
+        help="Specify the user login on the host")
+    rv.add_argument(
+        "--python", required=False,
+        help="Specify the Python executable on the remote host")
+    rv.add_argument(
+        "--identity", default=DFLT_IDENTITY,
+        help="Specify the path to a local SSH private key file ['{}']".format(
+            DFLT_IDENTITY
+        ))
+    rv.add_argument(
+        "--forget", action="store_true", default=False,
+        help="Remove hosts from the file '{}'".format(KNOWN_HOSTS))
+    rv.add_argument(
+        "--debug", action="store_true", default=False,
+        help="Print wire-level messages for debugging")
+    return rv
+ 
+def add_check_command_parser(subparsers):
+    rv = subparsers.add_parser(
+        "check", help="Run tests which don't modify the target."
+    )
+    rv.add_argument(
+        "--host", required=False,
+        help="Specify the name of the remote host")
+    rv.add_argument(
+        "--port", type=int, required=False,
+        help="Set the port number to the host")
+    rv.add_argument(
+        "--user", required=False,
+        help="Specify the user login on the host")
+    rv.add_argument(
+        "--python", required=False,
+        help="Specify the Python executable on the remote host")
+    rv.add_argument(
+        "--identity", default=DFLT_IDENTITY,
+        help="Specify the path to a local SSH private key file ['{}']".format(
+            DFLT_IDENTITY
+        ))
+    rv.add_argument(
+        "--forget", action="store_true", default=False,
+        help="Remove hosts from the file '{}'".format(KNOWN_HOSTS))
+    rv.add_argument(
+        "--debug", action="store_true", default=False,
+        help="Print wire-level messages for debugging")
+    # TODO: add failfast
+    return rv
+ 
+def add_units_command_parser(subparsers):
+    rv = subparsers.add_parser(
+        "units", help="Find and filter tests by their attributes."
+    )
+    return rv
+ 
