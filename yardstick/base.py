@@ -160,8 +160,13 @@ def operate(text, args, name="yardstick"):
 
         msg = ch.receive()
         while msg is not None:
-            log.debug(msg) # TODO: msg types, levels
-            prev, msg = msg, ch.receive()
+            try:
+                record = logging.makeLogRecord(msg)
+                log.handle(record)
+            except:
+                log.debug(msg)
+            finally:
+                prev, msg = msg, ch.receive()
         else:
             rv = prev
 

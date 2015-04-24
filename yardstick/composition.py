@@ -17,6 +17,7 @@
 # along with pyoncannon.  If not, see <http://www.gnu.org/licenses/>.
 
 import configparser
+import logging
 import platform
 import unittest
 
@@ -31,11 +32,12 @@ imports = [
     "ast", "collections", "collections.abc", "csv", "configparser", "ctypes",
     "datetime", "difflib", "errno", "filecmp", "functools", "glob", "grp",
     "gzip", "hashlib", "html", "inspect", "io", "ipaddress", "itertools",
-    "json", "locale", "linecache", "os", "pathlib", "platform", "posix",
-    "random", "re", "resource", "shlex", "shutil", "signal", "site", "string",
-    "struct", "stat", "subprocess", "sys", "sysconfig", "syslog", "tarfile",
-    "tempfile", "time", "timeit", "types", "textwrap", "unicodedata", "uuid",
-    "unittest", "venv", "warnings", "xml", "zipfile", "zlib" 
+    "json", "linecache", "locale", "logging", "os", "pathlib", "platform",
+    "posix", "random", "re", "resource", "shlex", "shutil", "signal", "site",
+    "string", "struct", "stat", "subprocess", "sys", "sysconfig", "syslog",
+    "tarfile", "tempfile", "time", "timeit", "types", "textwrap",
+    "unicodedata", "uuid", "unittest", "venv", "warnings", "xml", "zipfile",
+    "zlib" 
 ]
 
 
@@ -62,7 +64,16 @@ def check(class_):
     :requires: `platform`, `unittest`.
     """
     try:
-        channel.send("Executing from {}.".format(platform.node()))
+        msg = logging.LogRecord(
+            name="yardstick.{}".format(class_.__name__),
+            level=logging.INFO,
+            pathname="",
+            lineno="",
+            msg="Executing from {}.".format(platform.node()),
+            args={},
+            exc_info=None,
+        )
+        channel.send(vars(msg))
         config = channel.receive()
         try:
             class_.ini = config_parser()
@@ -91,9 +102,7 @@ def check(class_):
         channel.send(rv)
     except (EOFError, OSError) as e:
         channel.send(str(getattr(e, "args", e) or e))
-    except (Error, Exception) as e:
+    except Exception as e:
         channel.send(str(getattr(e, "args", e) or e))
     finally:
         channel.send(None)
-
-
