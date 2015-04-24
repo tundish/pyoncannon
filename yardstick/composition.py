@@ -16,6 +16,11 @@
 # You should have received a copy of the GNU General Public License
 # along with pyoncannon.  If not, see <http://www.gnu.org/licenses/>.
 
+shebang = """
+#!/usr/bin/env python3
+# encoding: UTF-8
+
+""".lstrip()
 
 imports = [
     "ast", "collections", "csv", "configparser", "ctypes", "datetime",

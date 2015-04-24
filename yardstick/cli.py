@@ -36,53 +36,6 @@ It lets you select and launch:
 import yardstick.base
 
 
-def parser(description=__doc__):
-    rv = argparse.ArgumentParser(
-        description,
-        fromfile_prefix_chars="@"
-    )
-    rv.add_argument(
-        "--host", required=False,
-        help="Specify the name of the remote host")
-    rv.add_argument(
-        "--port", type=int, required=False,
-        help="Set the port number to the host")
-    rv.add_argument(
-        "--user", required=False,
-        help="Specify the user login on the host")
-    rv.add_argument(
-        "--python", required=False,
-        help="Specify the Python executable on the remote host")
-    rv.add_argument(
-        "--identity", default=yardstick.base.DFLT_IDENTITY,
-        help="Specify the path to a local SSH private key file ['{}']".format(
-            yardstick.base.DFLT_IDENTITY
-        ))
-    rv.add_argument(
-        "--forget", action="store_true", default=False,
-        help="Remove hosts from the file '{}'".format(yardstick.base.KNOWN_HOSTS))
-    rv.add_argument(
-        "--version", action="store_true", default=False,
-        help="Print the current version number")
-    rv.add_argument(
-        "--debug", action="store_true", default=False,
-        help="Print wire-level messages for debugging")
-    rv.add_argument(
-        "-v", "--verbose", required=False,
-        action="store_const", dest="log_level",
-        const=logging.DEBUG, default=logging.INFO,
-        help="Increase the verbosity of output")
-    rv.add_argument(
-        "--log", default=None, dest="log_path",
-        help="Set a file path for log output")
-    rv.add_argument(
-        "ini", nargs="*",
-        type=argparse.FileType('r'), default=[sys.stdin],
-        help="Specify one or more .ini files to process "
-        "(or else read stdin).")
-    return rv
-
-# TODO: add test package option
 def parsers(description=__doc__):
     parser = argparse.ArgumentParser(
         description,
@@ -181,6 +134,9 @@ def add_check_command_parser(subparsers):
         help="Remove existing host key from the file '{}'".format(
             yardstick.base.KNOWN_HOSTS
         ))
+    rv.add_argument(
+        "--show", action="store_true", default=False,
+        help="Print the code for each task, but do not execute it")
     rv.add_argument(
         "--debug", action="store_true", default=False,
         help="Print wire-level messages for debugging")

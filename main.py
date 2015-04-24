@@ -17,11 +17,8 @@
 # along with pyoncannon.  If not, see <http://www.gnu.org/licenses/>.
 
 __doc__ = """
-Checks the remote access configuration on a node.
+Entry point for the yardstick program.
 
-::
-
-    main.py < demo/manjaro_openrc_net-virtualbox.ini
 """
 
 import sys
@@ -31,27 +28,37 @@ import yardstick.base
 import yardstick.cli
 
 
-if __name__ == "__main__":
+def run():
     p, subs = yardstick.cli.parsers()
     yardstick.cli.add_auto_command_parser(subs)
     yardstick.cli.add_check_command_parser(subs)
     yardstick.cli.add_units_command_parser(subs)
     args = p.parse_args()
 
+    rv = 0
     if args.version:
         sys.stdout.write(yardstick.__version__ + "\n")
-        rv = 0
     else:
-        # specific to check command
-        logName = yardstick.base.log_setup(args, "yardstick.check")
-        for text in yardstick.base.check_tasks(args):
-            rv = yardstick.base.operate(text, args, logName)
-            print("\n")
-            print(
-                *[i for a in ("skipped", "failures", "errors")
-                    for i in rv[a]],
-                sep="\n"
-            )
-            print("Total: {}".format(rv["total"]))
+        if args.command in ("auto", "units"):
+            raise NotImplementedError("This feature is not yet available.")
+
+        logName = yardstick.base.log_setup(
+            args, "yardstick.{}".format(args.command)
+        )
+        for text in yardstick.base.gen_check_tasks(args):
+            if args.show:
+                print(text)
+            else:
+                rv = yardstick.base.operate(text, args, logName)
+                print("\n")
+                print(
+                    *[i for a in ("skipped", "failures", "errors")
+                        for i in rv[a]],
+                    sep="\n"
+                )
+                print("Total: {}".format(rv["total"]))
 
     sys.exit(1 if rv is None else 0)
+
+if __name__ == "__main__":
+    run()

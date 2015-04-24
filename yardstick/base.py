@@ -104,7 +104,7 @@ def log_setup(args, name="yardstick"):
     log.addHandler(ch)
     return name
 
-def check_tasks(args):
+def gen_check_tasks(args):
     ldr = unittest.defaultTestLoader
     testClasses = {
         type(meth) for mod in ldr.discover("yardstick.openrc")
@@ -117,6 +117,7 @@ def check_tasks(args):
         )
         checkLines[0] = 'if __name__ == "__channelexec__":\n'
         text = "\n".join((
+            yardstick.composition.shebang,
             "\n".join("import {}".format(i)
                       for i in yardstick.composition.imports),
             "",
