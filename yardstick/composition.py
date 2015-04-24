@@ -63,15 +63,15 @@ def check(class_):
     """
     try:
         channel.send("Executing from {}.".format(platform.node()))
-        ini = config_parser()
         config = channel.receive()
         try:
-            class_.ini = ini.read_string(config)
+            class_.ini = config_parser()
+            class_.ini.read_string(config)
             class_.settings = config_settings(class_.ini)
         except Exception as e:
             class_.ini = None
             class_.settings = None
-            channel.send(config)
+            channel.send(str(ini))
             channel.send(str(getattr(e, "args", e) or e))
 
         class_.args = channel.receive()

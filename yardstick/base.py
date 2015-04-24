@@ -167,7 +167,7 @@ def operate(text, args, name="yardstick"):
 
     except (EOFError, OSError) as e:
         log.error(s)
-    except (Error, Exception) as e:
+    except Exception as e:
         log.error(getattr(e, "args", e) or e)
     finally:
         gw.exit()
