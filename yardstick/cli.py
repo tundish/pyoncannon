@@ -145,7 +145,9 @@ def add_check_command_parser(subparsers):
     rv.add_argument(
         "--debug", action="store_true", default=False,
         help="Print wire-level messages for debugging")
-    # TODO: add failfast
+    rv.add_argument(
+        "--failfast", action="store_true", default=False,
+        help="Halt checks on the first failure")
     rv = add_common_options(rv)
     rv.usage = rv.format_usage().replace("usage:", "").replace(
         "check", "\n\nyardstick [OPTIONS] check")

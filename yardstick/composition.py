@@ -51,7 +51,10 @@ def check(class_):
         ldr = unittest.defaultTestLoader
         suite = ldr.loadTestsFromTestCase(class_)
         # TODO: failfast
-        runner = unittest.TextTestRunner(resultclass=unittest.TestResult)
+        runner = unittest.TextTestRunner(
+            resultclass=unittest.TestResult,
+            failfast=class_.args.get("failfast", False),
+        )
         rlt = runner.run(suite)
         rv = {a: [i[1] for i in getattr(rlt, a)]
                 for a in ("errors", "failures", "skipped")}
