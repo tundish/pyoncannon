@@ -107,7 +107,9 @@ def log_setup(args, name="yardstick"):
 def gen_check_tasks(args):
     ldr = unittest.defaultTestLoader
     testClasses = {
-        type(meth) for mod in ldr.discover("yardstick.openrc")
+        type(meth)
+        for i in args.modules + args.paths
+        for mod in ldr.discover(i)
         for suite in mod for meth in suite
     }
 

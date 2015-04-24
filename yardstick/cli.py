@@ -52,6 +52,15 @@ def parsers(description=__doc__):
     parser.add_argument(
         "--log", default=None, dest="log_path",
         help="Set a file path for log output")
+
+    subparsers = parser.add_subparsers(
+        dest="command",
+        help="Commands:",
+    )
+    return (parser, subparsers)
+
+
+def add_common_options(parser):
     parser.add_argument(
         "--ini", nargs="*",
         type=argparse.FileType('r'), default=[sys.stdin],
@@ -65,12 +74,7 @@ def parsers(description=__doc__):
         "--paths", nargs="*",
         default=[],
         help="Specify one or more file paths to process.")
-
-    subparsers = parser.add_subparsers(
-        dest="command",
-        help="Commands:",
-    )
-    return (parser, subparsers)
+    return parser
 
 
 def add_auto_command_parser(subparsers):
@@ -103,6 +107,7 @@ def add_auto_command_parser(subparsers):
     rv.add_argument(
         "--debug", action="store_true", default=False,
         help="Print wire-level messages for debugging")
+    rv = add_common_options(rv)
     rv.usage = rv.format_usage().replace("usage:", "").replace(
         "auto", "\n\nyardstick [OPTIONS] auto")
     return rv
@@ -141,7 +146,7 @@ def add_check_command_parser(subparsers):
         "--debug", action="store_true", default=False,
         help="Print wire-level messages for debugging")
     # TODO: add failfast
-    # TODO: add printing of module.
+    rv = add_common_options(rv)
     rv.usage = rv.format_usage().replace("usage:", "").replace(
         "check", "\n\nyardstick [OPTIONS] check")
     return rv
