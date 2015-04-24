@@ -55,6 +55,19 @@ def config_settings(ini):
     return ini.defaults()
 
 
+def log_message(lvl, msg, *args, **kwargs):
+    msg = logging.LogRecord(
+        name=kwargs.get("name", "unknown"),
+        level=lvl,
+        pathname="",
+        lineno="",
+        msg=msg,
+        args=args,
+        exc_info=None,
+    )
+    return vars(msg)
+
+
 def check(class_):
     """
     Executed on the target by the `check` command.
@@ -63,17 +76,14 @@ def check(class_):
     :type class_: unittest.TestCase
     :requires: `platform`, `unittest`.
     """
+    logName="yardstick.{}".format(class_.__name__)
     try:
-        msg = logging.LogRecord(
-            name="yardstick.{}".format(class_.__name__),
-            level=logging.INFO,
-            pathname="",
-            lineno="",
+        msg = log_message(
+            logging.INFO,
             msg="Executing from {}.".format(platform.node()),
-            args={},
-            exc_info=None,
-        )
-        channel.send(vars(msg))
+            name=logName)
+        channel.send(msg)
+
         config = channel.receive()
         try:
             class_.ini = config_parser()
@@ -96,6 +106,10 @@ def check(class_):
             failfast=class_.args.get("failfast", False),
         )
         rlt = runner.run(suite)
+
+        msg = log_message(logging.INFO, msg="Check complete.", name=logName)
+        channel.send(msg)
+
         rv = {a: [i[1] for i in getattr(rlt, a)]
                 for a in ("errors", "failures", "skipped")}
         rv["total"] = rlt.testsRun

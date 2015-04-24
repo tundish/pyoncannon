@@ -115,6 +115,7 @@ def gen_check_tasks(args):
             inspect.getsource(class_),
             inspect.getsource(yardstick.composition.config_parser),
             inspect.getsource(yardstick.composition.config_settings),
+            inspect.getsource(yardstick.composition.log_message),
             "".join(checkLines).replace("class_", class_.__name__)
         ))
         yield text
