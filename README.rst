@@ -10,6 +10,31 @@ The Pyon Cannon
 * A bundle of scripts to set up a Python node for web applications.
 * Nothing to do with `Canon Pyon`_.
 
+Yardstick
+:::::::::
+
+.. todo:: CLI
+
+Simple measure::
+
+    yardstick measure --ini manjaro_openrc_net-virtualbox.ini --paths yardstick/openrc/test_*.py
+
+Simple measure::
+
+    yardstick measure --ini manjaro_openrc_net-virtualbox.ini --modules yardstick.openrc.test_access
+
+Discover available tags::
+
+    yardstick units yardstick.common yardstick.openrc
+
+Detect available test modules by tag::
+
+    yardstick units --include=.. --exclude=.. yardstick.common yardstick.openrc
+
+Make changes to remote host::
+
+    yardstick auto --paths yardstick/openrc/stage01.py yardstick/openrc/stage02.py
+
 Requirements
 ::::::::::::
 
