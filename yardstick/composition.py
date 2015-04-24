@@ -91,7 +91,7 @@ def check(class_):
             class_.settings = config_settings(class_.ini)
         except Exception as e:
             class_.ini = None
-            class_.settings = None
+            class_.settings = {}
             channel.send(str(ini))
             channel.send(str(getattr(e, "args", e) or e))
 
