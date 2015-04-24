@@ -41,7 +41,7 @@ The yardstick program supports system administration of remote nodes.
 It lets you select and launch:
 
 * tests written in Python
-* automated jobs controlled by a `.ini` file
+* modification tasks controlled by a `.ini` file
 
 """
 
@@ -228,23 +228,33 @@ def parsers(description=__doc__):
         type=argparse.FileType('r'), default=[sys.stdin],
         help="Specify one or more .ini files to process "
         "(or else read stdin).")
+    parser.add_argument(
+        "--modules", nargs="*",
+        default=[],
+        help="Specify one or more Python modules to process.")
+    parser.add_argument(
+        "--paths", nargs="*",
+        default=[],
+        help="Specify one or more file paths to process.")
 
     subparsers = parser.add_subparsers(
-        dest="command"
+        dest="command",
+        help="Commands:",
     )
     return (parser, subparsers)
 
 
 def add_auto_command_parser(subparsers):
     rv = subparsers.add_parser(
-        "auto", help="Run jobs which modify the target."
+        "auto", help="Run tasks which modify the target.",
+        description="", epilog="other commands: check, units"
     )
     rv.add_argument(
         "--host", required=False,
         help="Specify the name of the remote host")
     rv.add_argument(
         "--port", type=int, required=False,
-        help="Set the port number to the host")
+        help="Specify the port number to the host")
     rv.add_argument(
         "--user", required=False,
         help="Specify the user login on the host")
@@ -258,22 +268,27 @@ def add_auto_command_parser(subparsers):
         ))
     rv.add_argument(
         "--forget", action="store_true", default=False,
-        help="Remove hosts from the file '{}'".format(KNOWN_HOSTS))
+        help="Remove existing host key from the file '{}'".format(
+            KNOWN_HOSTS
+        ))
     rv.add_argument(
         "--debug", action="store_true", default=False,
         help="Print wire-level messages for debugging")
+    rv.usage = rv.format_usage().replace("usage:", "").replace(
+        "auto", "\n\nyardstick [OPTIONS] auto")
     return rv
  
 def add_check_command_parser(subparsers):
     rv = subparsers.add_parser(
-        "check", help="Run tests which don't modify the target."
+        "check", help="Run tests which don't modify the target.",
+        description="", epilog="other commands: auto, units"
     )
     rv.add_argument(
         "--host", required=False,
         help="Specify the name of the remote host")
     rv.add_argument(
         "--port", type=int, required=False,
-        help="Set the port number to the host")
+        help="Specify the port number to the host")
     rv.add_argument(
         "--user", required=False,
         help="Specify the user login on the host")
@@ -287,16 +302,24 @@ def add_check_command_parser(subparsers):
         ))
     rv.add_argument(
         "--forget", action="store_true", default=False,
-        help="Remove hosts from the file '{}'".format(KNOWN_HOSTS))
+        help="Remove existing host key from the file '{}'".format(
+            KNOWN_HOSTS
+        ))
     rv.add_argument(
         "--debug", action="store_true", default=False,
         help="Print wire-level messages for debugging")
     # TODO: add failfast
+    # TODO: add printing of module.
+    rv.usage = rv.format_usage().replace("usage:", "").replace(
+        "check", "\n\nyardstick [OPTIONS] check")
     return rv
  
 def add_units_command_parser(subparsers):
     rv = subparsers.add_parser(
-        "units", help="Find and filter tests by their attributes."
+        "units", help="Find and filter tests by their attributes.",
+        description="", epilog="other commands: auto, check"
     )
+    rv.usage = rv.format_usage().replace("usage:", "").replace(
+        "units", "\n\nyardstick [OPTIONS] units")
     return rv
  

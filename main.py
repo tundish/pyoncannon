@@ -38,43 +38,9 @@ except ImportError:
     # Remote host
     __version__ = None
 
-imports = [
-    "ast", "collections", "csv", "configparser", "ctypes", "datetime",
-    "difflib", "errno", "filecmp", "glob", "grp", "gzip", "hashlib",
-    "html", "inspect", "io", "ipaddress", "json", "locale", "linecache", "os",
-    "pathlib", "platform", "posix", "random", "re", "resource", "shlex",
-    "shutil", "signal", "site", "string", "struct", "stat", "subprocess",
-    "sys", "sysconfig", "syslog", "tarfile", "tempfile", "time", "timeit",
-    "types", "textwrap", "unicodedata", "uuid", "unittest", "venv",
-    "warnings", "xml", "zipfile", "zlib" 
-]
-
-
-def operate(class_):
-    try:
-        channel.send("Executing from {}.".format(platform.node()))
-        class_.ini = channel.receive()
-        class_.args = channel.receive()
-        class_.sudoPwd = channel.receive()
-        ldr = unittest.defaultTestLoader
-        suite = ldr.loadTestsFromTestCase(class_)
-        # TODO: failfast
-        runner = unittest.TextTestRunner(resultclass=unittest.TestResult)
-        rlt = runner.run(suite)
-        rv = {a: [i[1] for i in getattr(rlt, a)]
-                for a in ("errors", "failures", "skipped")}
-        rv["total"] = rlt.testsRun
-        channel.send(rv)
-    except (EOFError, OSError) as e:
-        channel.send(str(getattr(e, "args", e) or e))
-    except (Error, Exception) as e:
-        channel.send(str(getattr(e, "args", e) or e))
-    finally:
-        channel.send(None)
-
-
 if __name__ == "__main__":
     import yardstick.cli
+    import yardstick.composition
 
     p, subs = yardstick.cli.parsers()
     yardstick.cli.add_auto_command_parser(subs)
@@ -82,25 +48,30 @@ if __name__ == "__main__":
     yardstick.cli.add_units_command_parser(subs)
     args = p.parse_args()
 
-    logName = yardstick.cli.log_setup(args, "check_access")
     if args.version:
         sys.stdout.write(__version__ + "\n")
         rv = 0
     else:
         ldr = unittest.defaultTestLoader
+        # specific to check command
+        logName = yardstick.cli.log_setup(args, "yardstick.check")
         testClasses = {
             type(meth) for mod in ldr.discover("yardstick.openrc")
             for suite in mod for meth in suite
         }
 
         for class_ in testClasses:
-            operateLines, nr = inspect.getsourcelines(operate)
-            operateLines[0] = 'if __name__ == "__channelexec__":\n'
+            checkLines, nr = inspect.getsourcelines(
+                yardstick.composition.check
+            )
+            checkLines[0] = 'if __name__ == "__channelexec__":\n'
             text = "\n".join((
-                "\n".join("import {}".format(i) for i in imports),
+                "\n".join("import {}".format(i)
+                          for i in yardstick.composition.imports),
                 "",
                 inspect.getsource(class_),
-                "".join(operateLines).replace("class_", class_.__name__)
+                inspect.getsource(yardstick.cli.config_parser),
+                "".join(checkLines).replace("class_", class_.__name__)
             ))
             print(text)
             rv = yardstick.cli.main(text, args, logName)

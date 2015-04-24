@@ -45,6 +45,8 @@ Name the device using the admin interface::
     private.name = manjarovm
     public.fqdn =
 
+.. todo: move to the __doc__ of a python module
+
 SSH Access
 ==========
 
