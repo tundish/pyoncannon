@@ -24,15 +24,15 @@ Entry point for the yardstick program.
 import sys
 
 import yardstick
-import yardstick.base
-import yardstick.cli
+import yardstick.ops.base
+import yardstick.ops.cli
 
 
 def run():
-    p, subs = yardstick.cli.parsers()
-    yardstick.cli.add_auto_command_parser(subs)
-    yardstick.cli.add_check_command_parser(subs)
-    yardstick.cli.add_units_command_parser(subs)
+    p, subs = yardstick.ops.cli.parsers()
+    yardstick.ops.cli.add_auto_command_parser(subs)
+    yardstick.ops.cli.add_check_command_parser(subs)
+    yardstick.ops.cli.add_units_command_parser(subs)
     args = p.parse_args()
 
     rv = 0
@@ -42,14 +42,14 @@ def run():
         if args.command in ("auto", "units"):
             raise NotImplementedError("This feature is not yet available.")
 
-        logName = yardstick.base.log_setup(
+        logName = yardstick.ops.base.log_setup(
             args, "yardstick.{}".format(args.command)
         )
-        for text in yardstick.base.gen_check_tasks(args):
+        for text in yardstick.ops.base.gen_check_tasks(args):
             if args.show:
                 print(text)
             else:
-                rv = yardstick.base.operate(text, args, logName)
+                rv = yardstick.ops.base.operate(text, args, logName)
                 print("\n")
                 print(
                     *[i for a in ("skipped", "failures", "errors")

@@ -31,7 +31,7 @@ import unittest
 
 import execnet
 
-import yardstick.composition
+import yardstick.ops.checker
 
 __doc__ = """
 
@@ -55,7 +55,7 @@ def forget_host(host):
 
 
 def execnet_string(ini, args):
-    settings = yardstick.composition.config_settings(ini)
+    settings = yardstick.ops.checker.config_settings(ini)
     port = args.port or settings["admin.port"] or DFLT_PORT
     user = args.user or settings["admin.user"] or DFLT_USER
     host = args.host or ipaddress.ip_interface(settings["admin.net"]).ip
@@ -104,18 +104,18 @@ def gen_check_tasks(args):
 
     for class_ in testClasses:
         checkLines, nr = inspect.getsourcelines(
-            yardstick.composition.check
+            yardstick.ops.checker.check
         )
         checkLines[0] = 'if __name__ == "__channelexec__":\n'
         text = "\n".join((
-            yardstick.composition.shebang,
+            yardstick.ops.checker.shebang,
             "\n".join("import {}".format(i)
-                      for i in yardstick.composition.imports),
+                      for i in yardstick.ops.checker.imports),
             "",
             inspect.getsource(class_),
-            inspect.getsource(yardstick.composition.config_parser),
-            inspect.getsource(yardstick.composition.config_settings),
-            inspect.getsource(yardstick.composition.log_message),
+            inspect.getsource(yardstick.ops.checker.config_parser),
+            inspect.getsource(yardstick.ops.checker.config_settings),
+            inspect.getsource(yardstick.ops.checker.log_message),
             "".join(checkLines).replace("class_", class_.__name__)
         ))
         yield text
@@ -126,10 +126,10 @@ def operate(text, args, name="yardstick"):
     if sys.stdin in args.ini:
         log.info("Accepting stream input.")
 
-    ini = yardstick.composition.config_parser()
+    ini = yardstick.ops.checker.config_parser()
     config = '\n'.join(i.read() for i in args.ini)
     ini.read_string(config)
-    settings = yardstick.composition.config_settings(ini)
+    settings = yardstick.ops.checker.config_settings(ini)
 
     if ini.sections():
         sudoPwd = getpass(

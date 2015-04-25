@@ -15,7 +15,7 @@ About Yardstick
 
 Run the demo::
 
-    pyoncannon> python main.py @demo\check-manjaro_openrc_net-virtualbox.windows
+    pyoncannon> python -m yardstick.ops.main @demo\check-manjaro_openrc_net-virtualbox.windows
 
 .. todo:: CLI
 

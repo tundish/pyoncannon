@@ -33,7 +33,7 @@ It lets you select and launch:
 
 """
 
-import yardstick.base
+import yardstick.ops.base
 
 
 def parsers(description=__doc__):
@@ -95,14 +95,14 @@ def add_auto_command_parser(subparsers):
         "--python", required=False,
         help="Specify the Python executable on the remote host")
     rv.add_argument(
-        "--identity", default=yardstick.base.DFLT_IDENTITY,
+        "--identity", default=yardstick.ops.base.DFLT_IDENTITY,
         help="Specify the path to a local SSH private key file ['{}']".format(
-            yardstick.base.DFLT_IDENTITY
+            yardstick.ops.base.DFLT_IDENTITY
         ))
     rv.add_argument(
         "--forget", action="store_true", default=False,
         help="Remove existing host key from the file '{}'".format(
-            yardstick.base.KNOWN_HOSTS
+            yardstick.ops.base.KNOWN_HOSTS
         ))
     rv.add_argument(
         "--debug", action="store_true", default=False,
@@ -130,14 +130,14 @@ def add_check_command_parser(subparsers):
         "--python", required=False,
         help="Specify the Python executable on the remote host")
     rv.add_argument(
-        "--identity", default=yardstick.base.DFLT_IDENTITY,
+        "--identity", default=yardstick.ops.base.DFLT_IDENTITY,
         help="Specify the path to a local SSH private key file ['{}']".format(
-            yardstick.base.DFLT_IDENTITY
+            yardstick.ops.base.DFLT_IDENTITY
         ))
     rv.add_argument(
         "--forget", action="store_true", default=False,
         help="Remove existing host key from the file '{}'".format(
-            yardstick.base.KNOWN_HOSTS
+            yardstick.ops.base.KNOWN_HOSTS
         ))
     rv.add_argument(
         "--show", action="store_true", default=False,
