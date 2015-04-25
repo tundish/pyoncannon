@@ -5,7 +5,7 @@
 The Pyon Cannon
 :::::::::::::::
 
-`Fire Python into the clouds!`
+`Fire negative entropy into clouds with Yardstick!`
 
 * A bundle of scripts to set up a Python node for web applications.
 * Nothing to do with `Canon Pyon`_.
