@@ -21,29 +21,36 @@ import logging
 import platform
 import unittest
 
-
-shebang = """
-#!/usr/bin/env python3
-# encoding: UTF-8
-
-""".lstrip()
-
-imports = [
-    "ast", "collections", "collections.abc", "csv", "configparser", "ctypes",
-    "datetime", "difflib", "errno", "filecmp", "functools", "glob", "grp",
-    "gzip", "hashlib", "html", "inspect", "io", "ipaddress", "itertools",
-    "json", "linecache", "locale", "logging", "os", "pathlib", "platform",
-    "posix", "random", "re", "resource", "shlex", "shutil", "signal", "site",
-    "string", "struct", "stat", "subprocess", "sys", "sysconfig", "syslog",
-    "tarfile", "tempfile", "time", "timeit", "types", "textwrap",
-    "unicodedata", "uuid", "unittest", "venv", "warnings", "xml", "zipfile",
-    "zlib" 
-]
+def config_parser():
+    return configparser.ConfigParser(
+        strict=True,
+        empty_lines_in_values=True,
+        allow_no_value=True,
+        interpolation=configparser.ExtendedInterpolation()
+    )
 
 
-def check(class_):
+def config_settings(ini):
+    # TODO: check defaults section
+    return ini.defaults()
+
+
+def log_message(lvl, msg, *args, **kwargs):
+    msg = logging.LogRecord(
+        name=kwargs.get("name", "unknown"),
+        level=lvl,
+        pathname="",
+        lineno="",
+        msg=msg,
+        args=args,
+        exc_info=None,
+    )
+    return vars(msg)
+
+
+def auto(module):
     """
-    Executed on the target by the `check` command.
+    Executed on the target by the `auto` command.
 
     :param class_: A class of tests.
     :type class_: unittest.TestCase

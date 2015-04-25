@@ -17,7 +17,6 @@
 # along with pyoncannon.  If not, see <http://www.gnu.org/licenses/>.
 
 import argparse
-from getpass import getpass
 import inspect
 import ipaddress
 import logging
@@ -32,6 +31,7 @@ import unittest
 import execnet
 
 import yardstick.ops.checker
+import yardstick.ops.modder
 
 __doc__ = """
 
@@ -55,7 +55,7 @@ def forget_host(host):
 
 
 def execnet_string(ini, args):
-    settings = yardstick.ops.checker.config_settings(ini)
+    settings = yardstick.ops.modder.config_settings(ini)
     port = args.port or settings["admin.port"] or DFLT_PORT
     user = args.user or settings["admin.user"] or DFLT_USER
     host = args.host or ipaddress.ip_interface(settings["admin.net"]).ip
@@ -93,6 +93,7 @@ def log_setup(args, name="yardstick"):
     log.addHandler(ch)
     return name
 
+
 def gen_check_tasks(args):
     ldr = unittest.defaultTestLoader
     testClasses = {
@@ -113,29 +114,19 @@ def gen_check_tasks(args):
                       for i in yardstick.ops.checker.imports),
             "",
             inspect.getsource(class_),
-            inspect.getsource(yardstick.ops.checker.config_parser),
-            inspect.getsource(yardstick.ops.checker.config_settings),
-            inspect.getsource(yardstick.ops.checker.log_message),
+            inspect.getsource(yardstick.ops.modder.config_parser),
+            inspect.getsource(yardstick.ops.modder.config_settings),
+            inspect.getsource(yardstick.ops.modder.log_message),
             "".join(checkLines).replace("class_", class_.__name__)
         ))
         yield text
 
-def operate(text, args, name="yardstick"):
+def operate(text, config, args, sudoPwd, name="yardstick"):
     log = logging.getLogger(name)
 
-    if sys.stdin in args.ini:
-        log.info("Accepting stream input.")
-
-    ini = yardstick.ops.checker.config_parser()
-    config = '\n'.join(i.read() for i in args.ini)
+    ini = yardstick.ops.modder.config_parser()
     ini.read_string(config)
-    settings = yardstick.ops.checker.config_settings(ini)
-
-    if ini.sections():
-        sudoPwd = getpass(
-            "Enter sudo password for {}:".format(settings["admin.user"]))
-    else:
-        sudoPwd = None
+    settings = yardstick.ops.modder.config_settings(ini)
 
     if args.forget:
         host = ipaddress.ip_interface(settings["admin.net"])

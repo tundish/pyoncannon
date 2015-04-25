@@ -21,6 +21,8 @@ Entry point for the yardstick program.
 
 """
 
+from getpass import getpass
+import logging
 import sys
 
 import yardstick
@@ -45,11 +47,28 @@ def run():
         logName = yardstick.ops.base.log_setup(
             args, "yardstick.{}".format(args.command)
         )
+        log = logging.getLogger(logName)
+
+        if sys.stdin in args.ini:
+            log.info("Accepting stream input.")
+
+        config = '\n'.join(i.read() for i in args.ini)
+        ini = yardstick.ops.modder.config_parser()
+        ini.read_string(config)
+
+        if ini.sections():
+            sudoPwd = getpass(
+                "Enter sudo password for {}:".format(settings["admin.user"]))
+        else:
+            sudoPwd = None
+
         for text in yardstick.ops.base.gen_check_tasks(args):
             if args.show:
                 print(text)
             else:
-                rv = yardstick.ops.base.operate(text, args, logName)
+                rv = yardstick.ops.base.operate(
+                    text, config, args, sudoPwd, logName
+                )
                 print("\n")
                 print(
                     *[i for a in ("skipped", "failures", "errors")
