@@ -10,8 +10,8 @@ The Pyon Cannon
 * A bundle of scripts to set up a Python node for web applications.
 * Nothing to do with `Canon Pyon`_.
 
-Yardstick
-:::::::::
+About Yardstick
+:::::::::::::::
 
 .. todo:: CLI
 
