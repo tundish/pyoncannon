@@ -47,7 +47,10 @@ def main(args):
     ini.read_string(config)
     settings = yardstick.ops.modder.config_settings(ini)
 
-    if ini.sections():
+    if any(
+        ini.getboolean(sec, "sudo", fallback=False)
+        for sec in ini.sections()
+    ):
         sudoPwd = getpass(
             "Enter sudo password for {}:".format(settings["admin.user"]))
     else:
