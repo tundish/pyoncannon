@@ -1,0 +1,8 @@
+--verbose
+--log
+demo\manjaro_openrc_net-virtualbox.log
+check
+--ini
+demo\manjaro_openrc_net-virtualbox.ini
+--modules
+yardstick.openrc
