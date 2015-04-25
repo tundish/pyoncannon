@@ -109,34 +109,10 @@ Reboot::
 
     # /sbin/shutdown -r now
 
-Vimrc
-=====
-
-/root/.exrc::
-
-    set shiftwidth=4
-    set tabstop=4
-    set number
-
-/root/.vimrc::
-
-    set textwidth=79
-    set shiftwidth=4
-    set tabstop=4
-    set expandtab
-    set number
-    set ruler
-    set backspace=2
-
-    syntax on
-    set background=dark
-    colorscheme desert
-
 Ops from fresh
 ==============
 
 * ntp-client
-* .vimrc file for root
 * .bashrc ``export EDITOR=vi``
 * modify /etc/skel
 * check /etc/default/useradd

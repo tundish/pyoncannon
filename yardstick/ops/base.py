@@ -121,6 +121,7 @@ def gen_check_tasks(args):
         ))
         yield text
 
+
 def operate(text, config, args, sudoPwd, name="yardstick"):
     log = logging.getLogger(name)
 

@@ -74,6 +74,9 @@ def add_common_options(parser):
         "--paths", nargs="*",
         default=[],
         help="Specify one or more file paths to process.")
+    parser.add_argument(
+        "--show", action="store_true", default=False,
+        help="Print the code for each task, but do not execute it")
     return parser
 
 
@@ -139,9 +142,6 @@ def add_check_command_parser(subparsers):
         help="Remove existing host key from the file '{}'".format(
             yardstick.ops.base.KNOWN_HOSTS
         ))
-    rv.add_argument(
-        "--show", action="store_true", default=False,
-        help="Print the code for each task, but do not execute it")
     rv.add_argument(
         "--debug", action="store_true", default=False,
         help="Print wire-level messages for debugging")

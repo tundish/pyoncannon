@@ -11,6 +11,7 @@ Contents:
    :maxdepth: 1
 
    access
+   vimrc
 
 .. include:: ../../README.rst
  

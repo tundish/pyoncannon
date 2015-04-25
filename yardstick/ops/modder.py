@@ -19,15 +19,18 @@
 import configparser
 import logging
 import platform
+import re
 import unittest
 
 def config_parser():
-    return configparser.ConfigParser(
+    rv = configparser.ConfigParser(
         strict=True,
         empty_lines_in_values=True,
         allow_no_value=True,
         interpolation=configparser.ExtendedInterpolation()
     )
+    rv.SECTCRE = re.compile(r"\[ *(?P<header>[^]]+?) *\]")
+    return rv
 
 
 def config_settings(ini):

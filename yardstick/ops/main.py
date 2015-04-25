@@ -30,37 +30,38 @@ import yardstick.ops.base
 import yardstick.ops.cli
 
 
-def run():
-    p, subs = yardstick.ops.cli.parsers()
-    yardstick.ops.cli.add_auto_command_parser(subs)
-    yardstick.ops.cli.add_check_command_parser(subs)
-    yardstick.ops.cli.add_units_command_parser(subs)
-    args = p.parse_args()
+def main(args):
+    if args.command is None:
+        return 2
+
+    logName = yardstick.ops.base.log_setup(
+        args, "yardstick.{}".format(args.command)
+    )
+    log = logging.getLogger(logName)
+
+    if sys.stdin in args.ini:
+        log.info("Accepting stream input.")
+
+    config = '\n'.join(i.read() for i in args.ini)
+    ini = yardstick.ops.modder.config_parser()
+    ini.read_string(config)
+    settings = yardstick.ops.modder.config_settings(ini)
+
+    if ini.sections():
+        sudoPwd = getpass(
+            "Enter sudo password for {}:".format(settings["admin.user"]))
+    else:
+        sudoPwd = None
+
+    if args.show:
+        ini.write(sys.stdout)
+        sys.stdout.write("\n")
 
     rv = 0
-    if args.version:
-        sys.stdout.write(yardstick.__version__ + "\n")
-    else:
-        if args.command in ("auto", "units"):
-            raise NotImplementedError("This feature is not yet available.")
+    if args.command == "auto":
+        pass
 
-        logName = yardstick.ops.base.log_setup(
-            args, "yardstick.{}".format(args.command)
-        )
-        log = logging.getLogger(logName)
-
-        if sys.stdin in args.ini:
-            log.info("Accepting stream input.")
-
-        config = '\n'.join(i.read() for i in args.ini)
-        ini = yardstick.ops.modder.config_parser()
-        ini.read_string(config)
-
-        if ini.sections():
-            sudoPwd = getpass(
-                "Enter sudo password for {}:".format(settings["admin.user"]))
-        else:
-            sudoPwd = None
+    elif args.command == "check":
 
         for text in yardstick.ops.base.gen_check_tasks(args):
             if args.show:
@@ -77,7 +78,30 @@ def run():
                 )
                 print("Total: {}".format(rv["total"]))
 
-    sys.exit(1 if rv is None else 0)
+    elif args.command == "units":
+        raise NotImplementedError("This feature is not yet available.")
+
+    return rv
+
+
+def run():
+    p, subs = yardstick.ops.cli.parsers()
+    yardstick.ops.cli.add_auto_command_parser(subs)
+    yardstick.ops.cli.add_check_command_parser(subs)
+    yardstick.ops.cli.add_units_command_parser(subs)
+    args = p.parse_args()
+
+    rv = 0
+    if args.version:
+        sys.stdout.write(yardstick.__version__ + "\n")
+    else:
+        rv = main(args)
+
+    if rv == 2:
+        sys.stderr.write("\n Missing command.\n\n")
+        p.print_help()
+
+    sys.exit(rv)
 
 if __name__ == "__main__":
     run()

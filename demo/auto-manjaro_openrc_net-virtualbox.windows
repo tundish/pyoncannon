@@ -1,0 +1,8 @@
+--verbose
+--log
+demo\manjaro_openrc_net-virtualbox.log
+auto
+--ini
+demo\manjaro_openrc_net-virtualbox.ini
+yardstick\openrc\vimrc.ini
+--show
