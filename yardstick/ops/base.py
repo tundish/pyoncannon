@@ -143,7 +143,15 @@ def operate(text, config, args, sudoPwd, name="yardstick"):
     if args.debug:
         os.environ["EXECNET_DEBUG"] = "2"
 
-    gw = execnet.makegateway(s)
+    try:
+        gw = execnet.makegateway(s)
+    except BrokenPipeError:
+        log.error(
+            "Unable to connect to host: "
+            "Check your hypervisor and/or networking."
+        )
+        return rv
+
     try:
         ch = gw.remote_exec(text)
         ch.send(config)

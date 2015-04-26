@@ -73,6 +73,8 @@ def main(args):
                 rv = yardstick.ops.base.operate(
                     text, config, args, sudoPwd, logName
                 )
+
+            if rv is not None:
                 print("\n")
                 print(
                     *[i for a in ("skipped", "failures", "errors")
