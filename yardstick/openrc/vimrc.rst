@@ -28,3 +28,10 @@ Vimrc
     set background=dark
     colorscheme desert
 
+Task definition
+~~~~~~~~~~~~~~~
+
+.. literalinclude:: vimrc.ini
+   :language: ini
+   :name: vimrc.ini
+   :caption:
