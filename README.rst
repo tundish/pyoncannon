@@ -2,30 +2,49 @@
 ..  Titling
     ##++::==~~--''``
     
-The Pyon Cannon
-:::::::::::::::
-
-`Fire negative entropy into clouds with Yardstick!`
-
-* A bundle of scripts to set up a Python node for web applications.
-* Nothing to do with `Canon Pyon`_.
-
 About Yardstick
 :::::::::::::::
 
-Run the demo::
+Quick demo
+==========
+
+1. Start a fresh installation of `Manjaro OpenRC Net`_ inside `VirtualBox`_
+   for Windows.
+
+2. Install Execnet_::
+
+    pyoncannon> pip install execnet
+
+3. Run the checks against the VM::
 
     pyoncannon> python -m yardstick.ops.main @demo\check-manjaro_openrc_net-virtualbox.windows
 
-.. todo:: CLI
+4. Run the tasks against the VM::
 
-Simple check::
+    pyoncannon> python -m yardstick.ops.main @demo\auto-manjaro_openrc_net-virtualbox.windows
+
+5. Run the checks again to show conformance::
+
+    pyoncannon> python -m yardstick.ops.main @demo\check-manjaro_openrc_net-virtualbox.windows
+
+
+Command line interface
+======================
+
+Run a check; modules identified by file path::
 
     yardstick check --ini manjaro_openrc_net-virtualbox.ini --paths yardstick/openrc/test_*.py
 
-Simple check::
+Run a check; name a package or module using dotted notation::
 
     yardstick check --ini manjaro_openrc_net-virtualbox.ini --modules yardstick.openrc.test_access
+
+Make changes to remote host::
+
+    yardstick auto --paths yardstick/openrc/stage01.py yardstick/openrc/stage02.py
+
+Not yet implemented
+~~~~~~~~~~~~~~~~~~~
 
 Discover available tags::
 
@@ -34,10 +53,6 @@ Discover available tags::
 Detect available test modules by tag::
 
     yardstick units --include=.. --exclude=.. yardstick.common yardstick.openrc
-
-Make changes to remote host::
-
-    yardstick auto --paths yardstick/openrc/stage01.py yardstick/openrc/stage02.py
 
 Requirements
 ::::::::::::
@@ -59,7 +74,8 @@ OpenSSH environment.
 :Copyright: 2015 D Haynes
 :Licence: `GNU General Public License`_
 
-.. _Canon Pyon: http://en.wikipedia.org/wiki/Canon_Pyon
+.. _Manjaro OpenRC Net: http://sourceforge.net/projects/manjaro-openrc/files/release/0.8.12/net/
+.. _VirtualBox: https://www.virtualbox.org/
 .. _Execnet: https://pypi.python.org/pypi/execnet
 .. _Git for Windows: http://git-scm.com/download/win
 .. _GNU General Public License: http://www.gnu.org/licenses/gpl.html

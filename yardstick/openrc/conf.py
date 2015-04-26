@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# PyonCannon documentation build configuration file, created by
+# Yardstick documentation build configuration file, created by
 # sphinx-quickstart on Fri Apr 17 17:45:59 2015.
 #
 # This file is execfile()d with the current directory set to its
@@ -57,7 +57,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = 'PyonCannon'
+project = 'Yardstick'
 copyright = '2015, tundish'
 author = 'tundish'
 
@@ -233,7 +233,7 @@ html_static_path = ['_static']
 #html_search_scorer = 'scorer.js'
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'PyonCannondoc'
+htmlhelp_basename = 'Yardstickdoc'
 
 # -- Options for LaTeX output ---------------------------------------------
 
@@ -255,7 +255,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-  (master_doc, 'PyonCannon.tex', 'PyonCannon Documentation',
+  (master_doc, 'Yardstick.tex', 'Yardstick Documentation',
    'tundish', 'manual'),
 ]
 
@@ -285,7 +285,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'pyoncannon', 'PyonCannon Documentation',
+    (master_doc, 'pyoncannon', 'Yardstick Documentation',
      [author], 1)
 ]
 
@@ -299,8 +299,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  (master_doc, 'PyonCannon', 'PyonCannon Documentation',
-   author, 'PyonCannon', 'One line description of project.',
+  (master_doc, 'Yardstick', 'Yardstick Documentation',
+   author, 'Yardstick', 'One line description of project.',
    'Miscellaneous'),
 ]
 

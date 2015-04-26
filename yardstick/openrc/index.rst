@@ -9,9 +9,10 @@ Contents:
 
 .. toctree::
    :maxdepth: 1
+   :numbered:
 
-   access
    vimrc
+   access
 
 .. include:: ../../README.rst
  
