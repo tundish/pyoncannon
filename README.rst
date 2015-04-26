@@ -54,6 +54,21 @@ Detect available test modules by tag::
 
     yardstick units --include=.. --exclude=.. yardstick.common yardstick.openrc
 
+Full documentation
+==================
+
+Install sphinx::
+
+    pyoncannon> pip install sphinx
+
+Build the docs from source::
+
+    pyoncannon> sphinx-build yardstick\openrc\ yardstick\openrc\html
+
+Read the documentation::
+
+    pyoncannon> firefox yardstick\openrc\html\index.html
+
 Requirements
 ::::::::::::
 
