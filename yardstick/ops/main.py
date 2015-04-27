@@ -62,7 +62,13 @@ def main(args):
 
     rv = 0
     if args.command == "auto":
-        pass
+        for text in yardstick.ops.base.gen_auto_tasks(args):
+            if args.show:
+                print(text)
+            else:
+                rv = yardstick.ops.base.operate(
+                    text, config, args, sudoPwd, logName
+                )
 
     elif args.command == "check":
 

@@ -16,13 +16,11 @@
 # You should have received a copy of the GNU General Public License
 # along with pyoncannon.  If not, see <http://www.gnu.org/licenses/>.
 
-from collections import OrderedDict
 import difflib
-import inspect
-from io import StringIO
-import sys
+import os
 import textwrap
 import unittest
+
 
 class VimrcTests(unittest.TestCase):
 
@@ -36,17 +34,21 @@ class VimrcTests(unittest.TestCase):
         set ruler
     """)
 
-    def test_top_content(self):
+    ini = None
+    settings = None
+    args = None
+    sudoPwd = None
+    ts = None
+
+    def test_root_exrc(self):
+        self.assertTrue(os.path.isfile("/root/.exrc"))
+
+    def test_root_vimrc(self):
+        self.assertTrue(os.path.isfile("/root/.vimrc"))
+
+    def tost_top_content(self):
         data = textwrap.dedent("""
             syntax enable   " enable syntax processing
         """)
         differ = difflib.SequenceMatcher(a=VimrcTests.data, b=data)
-        print(differ.get_opcodes())
         self.assertAlmostEqual(differ.ratio(), 1.0, delta=0.09)
-
-    def test_module_concatenation(self):
-        print(inspect.getsource(VimrcTests))
-        module = sys.modules[__name__]
-        print(inspect.getsource(module))
-        #print([i for i in sys.modules if i not in sys.builtin_module_names])
-        print([i for i in sys.modules if i not in __builtins__])

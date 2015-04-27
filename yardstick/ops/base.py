@@ -94,6 +94,13 @@ def log_setup(args, name="yardstick"):
     return name
 
 
+def gen_auto_tasks(args):
+    for spec in args.modules:
+        mod = None # FIXME:
+        yield inspect.getsource(mod)
+    yield inspect.getsource(yardstick.ops.modder)
+
+ 
 def gen_check_tasks(args):
     ldr = unittest.defaultTestLoader
     testClasses = {
