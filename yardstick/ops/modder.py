@@ -22,6 +22,22 @@ import platform
 import re
 import unittest
 
+
+class Task:
+
+    def __init__(self, *args, **kwargs):
+        pass
+
+    def __enter__(self):
+        return self
+
+    def __call__(self, user, wd=None, sudo=False):
+        return
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        return False
+
+
 def config_parser():
     rv = configparser.ConfigParser(
         strict=True,
@@ -49,6 +65,16 @@ def log_message(lvl, msg, *args, **kwargs):
         exc_info=None,
     )
     return vars(msg)
+
+
+def text2task(text, types):
+    """
+    Read a config section and return a Task.
+    """
+    which = {i.__name__: i for i in types}
+    things = rson.loads(text)
+    things = things if isinstance(things, list) else [things]
+    return [which.get(i.pop("type", None), dict)(**i) for i in things]
 
 
 def lockstep():
