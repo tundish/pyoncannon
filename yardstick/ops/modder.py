@@ -88,15 +88,37 @@ def lockstep():
                 name=logName
             )
             channel.send(msg)
+            #typ = __public__[data.pop("type", None)]
             channel.send(taskNr)
             taskNr = channel.receive()
 
     except (EOFError, OSError) as e:
-        channel.send(str(getattr(e, "args", e) or e))
+        channel.send(
+            log_message(
+                logging.ERROR,
+                msg=str(getattr(e, "args", e) or e),
+                name=logName)
+        )
     except Exception as e:
-        channel.send(str(getattr(e, "args", e) or e))
+        channel.send(
+            log_message(
+                logging.ERROR,
+                msg=str(getattr(e, "args", e) or e),
+                name=logName)
+        )
     finally:
         channel.send(None)
+
+
+__public__ = {
+    "file_write": None,
+    None: None,
+    }
+
+
+__all__ = [
+    "config_parser", "config_settings", "log_message",
+] + list((i for i in __public__.keys() if i is not None)) 
 
 
 if __name__ == "__channelexec__":
