@@ -19,23 +19,48 @@
 import configparser
 import logging
 import platform
+import subprocess
 import re
 import unittest
 
 
 class Task:
 
-    def __init__(self, *args, **kwargs):
-        pass
+    def __init__(self, sudoPass=None, **kwargs):
+        self.sudoPass = sudoPass
+        for k, v in kwargs.items():
+            setattr(self, k, v)
 
     def __enter__(self):
+        # Check attributes permit, return None if not
+        # Otherwise set args
+        self.args = []
         return self
 
-    def __call__(self, user, wd=None, sudo=False):
-        return
+    def __call__(self, wd=None, sudo=False):
+        if sudo:
+            p = subprocess.Popen(
+                ["sudo", "-S"] + self.args,
+                cwd=wd, shell=True,
+                stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                stderr=subprocess.DEVNULL)
+            self._out, self._err = p.communicate(
+                "{}\n".format(self.sudoPass).encode("utf-8"))
+        else:
+            p = subprocess.Popen(
+                self.args,
+                cwd=wd, shell=True,
+                stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                stderr=subprocess.DEVNULL)
+            self._out, self._err = p.communicate()
+        return self.success(self._out, self._err)
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        #opportunity to clean up
         return False
+
+    def success(self, out, err):
+        return not out.strip()
 
 
 def config_parser():
