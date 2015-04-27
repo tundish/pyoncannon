@@ -51,15 +51,13 @@ def log_message(lvl, msg, *args, **kwargs):
     return vars(msg)
 
 
-def auto(module):
+def lockstep():
     """
     Executed on the target by the `auto` command.
 
-    :param class_: A class of tests.
-    :type class_: unittest.TestCase
-    :requires: `platform`, `unittest`.
+
     """
-    logName="yardstick.{}".format(class_.__name__)
+    logName="yardstick.lockstep"
     try:
         msg = log_message(
             logging.INFO,
@@ -82,24 +80,24 @@ def auto(module):
         class_.sudoPwd = channel.receive()
         class_.ts = channel.receive()
 
-        ldr = unittest.defaultTestLoader
-        suite = ldr.loadTestsFromTestCase(class_)
-        runner = unittest.TextTestRunner(
-            resultclass=unittest.TestResult,
-            failfast=class_.args.get("failfast", False),
-        )
-        rlt = runner.run(suite)
+        taskNr = channel.receive()
+        while taskNr is not None:
+            sec = ini.sections()[taskNr]
+            msg = log_message(
+                logging.INFO, msg="Task '{}'".format(sec),
+                name=logName
+            )
+            channel.send(msg)
+            channel.send(taskNr)
+            job = channel.receive()
 
-        msg = log_message(logging.INFO, msg="Check complete.", name=logName)
-        channel.send(msg)
-
-        rv = {a: [i[1] for i in getattr(rlt, a)]
-                for a in ("errors", "failures", "skipped")}
-        rv["total"] = rlt.testsRun
-        channel.send(rv)
     except (EOFError, OSError) as e:
         channel.send(str(getattr(e, "args", e) or e))
     except Exception as e:
         channel.send(str(getattr(e, "args", e) or e))
     finally:
         channel.send(None)
+
+
+if __name__ == "__channelexec__":
+    lockstep()

@@ -62,22 +62,22 @@ def main(args):
 
     rv = 0
     if args.command == "auto":
-        for text in yardstick.ops.base.gen_auto_tasks(args):
+        for code in yardstick.ops.base.gen_auto_tasks(args):
             if args.show:
-                print(text)
+                print(code)
             else:
                 rv = yardstick.ops.base.operate(
-                    text, config, args, sudoPwd, logName
+                    code, config, args, sudoPwd, logName
                 )
 
     elif args.command == "check":
 
-        for text in yardstick.ops.base.gen_check_tasks(args):
+        for code in yardstick.ops.base.gen_check_tasks(args):
             if args.show:
-                print(text)
+                print(code)
             else:
                 rv = yardstick.ops.base.operate(
-                    text, config, args, sudoPwd, logName
+                    code, config, args, sudoPwd, logName
                 )
 
             if rv is not None:

@@ -97,8 +97,8 @@ def log_setup(args, name="yardstick"):
 def gen_auto_tasks(args):
     for spec in args.modules:
         mod = None # FIXME:
-        yield inspect.getsource(mod)
-    yield inspect.getsource(yardstick.ops.modder)
+        yield mod
+    yield yardstick.ops.modder
 
  
 def gen_check_tasks(args):
@@ -129,7 +129,37 @@ def gen_check_tasks(args):
         yield text
 
 
-def operate(text, config, args, sudoPwd, name="yardstick"):
+def loop_over_lockstep(channel, name, ini):
+    log = logging.getLogger(name)
+
+    for n, s in enumerate(ini.sections()):
+        if ini.get(sec, "action", fallback="remote") == "local":
+            log.debug("Section {} needs local action.".format(n))
+        else:
+            channel.send(n)
+            loop_over_logrecords(channel, name, n)
+
+    channel.send(None)
+    return len(ini.sections())
+
+
+def loop_over_logrecords(channel, name, sentinel=None):
+    log = logging.getLogger(name)
+
+    prev = msg = channel.receive()
+    while not msg == sentinel:
+        try:
+            record = logging.makeLogRecord(msg)
+            log.handle(record)
+        except:
+            log.debug(msg)
+        finally:
+            prev, msg = msg, channel.receive()
+
+    return prev
+
+
+def operate(code, config, args, sudoPwd, name="yardstick"):
     log = logging.getLogger(name)
 
     ini = yardstick.ops.modder.config_parser()
@@ -160,23 +190,16 @@ def operate(text, config, args, sudoPwd, name="yardstick"):
         return rv
 
     try:
-        ch = gw.remote_exec(text)
+        ch = gw.remote_exec(code)
         ch.send(config)
         ch.send({k: v for k, v in vars(args).items() if not isinstance(v, list)})
         ch.send(sudoPwd)
         ch.send(time.time())
 
-        msg = ch.receive()
-        while msg is not None:
-            try:
-                record = logging.makeLogRecord(msg)
-                log.handle(record)
-            except:
-                log.debug(msg)
-            finally:
-                prev, msg = msg, ch.receive()
+        if code is yardstick.ops.modder:
+            rv = loop_over_lockstep(ch, name, ini)
         else:
-            rv = prev
+            rv = loop_over_logrecords(ch, name)
 
     except (EOFError, OSError) as e:
         log.error(s)
