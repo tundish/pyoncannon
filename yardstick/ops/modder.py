@@ -67,18 +67,18 @@ def lockstep():
 
         config = channel.receive()
         try:
-            class_.ini = config_parser()
-            class_.ini.read_string(config)
-            class_.settings = config_settings(class_.ini)
+            ini = config_parser()
+            ini.read_string(config)
+            settings = config_settings(ini)
         except Exception as e:
-            class_.ini = None
-            class_.settings = {}
+            ini = None
+            settings = {}
             channel.send(config)
             channel.send(str(getattr(e, "args", e) or e))
 
-        class_.args = channel.receive()
-        class_.sudoPwd = channel.receive()
-        class_.ts = channel.receive()
+        args = channel.receive()
+        sudoPwd = channel.receive()
+        ts = channel.receive()
 
         taskNr = channel.receive()
         while taskNr is not None:
@@ -89,7 +89,7 @@ def lockstep():
             )
             channel.send(msg)
             channel.send(taskNr)
-            job = channel.receive()
+            taskNr = channel.receive()
 
     except (EOFError, OSError) as e:
         channel.send(str(getattr(e, "args", e) or e))

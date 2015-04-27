@@ -133,7 +133,8 @@ def loop_over_lockstep(channel, name, ini):
     log = logging.getLogger(name)
 
     for n, s in enumerate(ini.sections()):
-        if ini.get(sec, "action", fallback="remote") == "local":
+        log.debug(s)
+        if ini.get(s, "action", fallback="remote") == "local":
             log.debug("Section {} needs local action.".format(n))
         else:
             channel.send(n)

@@ -66,9 +66,10 @@ def main(args):
             if args.show:
                 print(code)
             else:
-                rv = yardstick.ops.base.operate(
+                nTasks = yardstick.ops.base.operate(
                     code, config, args, sudoPwd, logName
                 )
+                rv = 0 if nTasks == len(ini.sections()) else 1
 
     elif args.command == "check":
 
