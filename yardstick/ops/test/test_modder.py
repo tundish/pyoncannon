@@ -17,7 +17,9 @@
 # along with pyoncannon.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
+import os
 import re
+import tempfile
 import textwrap
 import unittest
 
@@ -25,22 +27,29 @@ from yardstick.ops.modder import log_message
 
 class Text:
 
+    @staticmethod
+    def arguments(**kwargs):
+        return None
+
     def __init__(
-        self, name="yardstick.Text", sudoPass=None, **kwargs
+        self, name="yardstick.Text", **kwargs
     ):
         self.name = name
-        self.sudoPass = sudoPass
         self._rv = None
         for k, v in kwargs.items():
             setattr(self, k, v)
 
     def __enter__(self):
+        self._content = ""
         if self.path is not None:
-            with open(self.path, 'r') as input_:
-                self._content = input_.read()
+            try:
+                with open(self.path, 'r') as input_:
+                    self._content = input_.read()
+            except FileNotFoundError:
+                pass
         return self
 
-    def __call__(self, content, wd=None, sudo=False):
+    def __call__(self, content, wd=None, sudo=False, sudoPwd=None):
         if isinstance(self.seek, str):
             args = ([textwrap.indent(self.data, ' ' * self.indent)] +
                 [""] * self.newlines)
@@ -157,4 +166,55 @@ class TextTester(unittest.TestCase):
             self.assertEqual(expect, t._rv)
 
     def test_enter_checks_attributes(self):
+        config = """
+            [vimrc]
+            sudo = False
+            action = remote
+            type = Text
+            path = /root/.vimrc
+            seek = .*
+            data =
+                set textwidth=79
+                set shiftwidth=4
+                set tabstop=4
+                set expandtab
+                set number
+                set ruler
+                set backspace=2
+
+                syntax on
+                set background=dark
+                colorscheme desert
+            indent = 0
+            newlines = 0
+        """
         self.fail()
+
+
+    def test_file_interaction(self):
+        expect = TextTester.content.replace(
+            "# a.a = False", "a.a = True"
+        )
+        fd, fP = tempfile.mkstemp(text=True)
+        try:
+            with open(fP, 'w') as target:
+                target.write(TextTester.content)
+
+            with Text(
+                sudoPass=None,
+                path=fP,
+                seek="# a\\.a.+$",
+                data="a.a = True",
+                indent=4,
+                newlines=1
+            ) as t:
+                list(t(TextTester.content, wd=None, sudo=False))
+
+            with open(fP, 'r') as target:
+                rv = target.read()
+                self.assertEqual(expect, rv)
+
+            print(fP)
+        finally:
+            os.close(fd)
+            os.remove(fP)
