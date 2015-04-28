@@ -36,7 +36,11 @@ class Text:
         if isinstance(self.seek, str):
             return None
         elif self.seek:
-            return None
+            args = ( 
+                [content] +
+                [textwrap.indent(self.data, ' ' * self.indent)] +
+                [""] * self.newlines) 
+            return "\n".join(args)
         else:
             args = ([textwrap.indent(self.data, ' ' * self.indent)] +
                 [""] * self.newlines + [content])
@@ -82,11 +86,28 @@ class TextTester(unittest.TestCase):
         self.assertEqual(expect, rv)
 
     def test_seek_true(self):
-        expect = TextTester.content + """
-        c = True
-
-        """
-        self.fail(None)
+        change = textwrap.dedent("""
+            c.a = True
+            c.b = False
+        """).strip()
+        expect = "\n".join((
+            TextTester.content,
+            "\n".join(("    " + i for i in change.splitlines())),
+            "", # newline = 1
+        ))
+        with Text(
+            sudoPass=None,
+            path="/root/.vimrc",
+            seek=True,
+            data=textwrap.dedent("""
+                c.a = True
+                c.b = False
+            """).strip(),
+            indent=4,
+            newlines=1
+        ) as t:
+            rv = t(TextTester.content, wd=None, sudo=False)       
+        self.assertEqual(expect, rv)
 
     def test_seek_re(self):
         expect = TextTester.content.replace(
