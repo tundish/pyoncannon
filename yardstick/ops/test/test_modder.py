@@ -24,32 +24,32 @@ import textwrap
 import unittest
 
 from yardstick.ops.modder import log_message
+from yardstick.ops.modder import config_parser
 
 class Text:
 
     @staticmethod
     def arguments(**kwargs):
-        return None
+        return {k: v for k, v in kwargs.items()
+                if k in {"path", "seek", "data", "indent", "newlines"}}
 
     def __init__(
         self, name="yardstick.Text", **kwargs
     ):
         self.name = name
+        self._content = ""
         self._rv = None
         for k, v in kwargs.items():
             setattr(self, k, v)
 
-    def __enter__(self):
-        self._content = ""
+    def __call__(self, content, wd=None, sudo=False, sudoPwd=None):
         if self.path is not None:
             try:
                 with open(self.path, 'r') as input_:
                     self._content = input_.read()
             except FileNotFoundError:
                 pass
-        return self
 
-    def __call__(self, content, wd=None, sudo=False, sudoPwd=None):
         if isinstance(self.seek, str):
             args = ([textwrap.indent(self.data, ' ' * self.indent)] +
                 [""] * self.newlines)
@@ -84,11 +84,9 @@ class Text:
                 [""] * self.newlines + [content])
             self._rv = "\n".join(args)
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
         if self._rv is not None and self.path is not None:
             with open(self.path, 'w') as output:
                 output.write(self._rv)
-        return False
 
 
 class TextTester(unittest.TestCase):
@@ -109,7 +107,7 @@ class TextTester(unittest.TestCase):
             "", # newline = 1
             TextTester.content
         ))
-        with Text(
+        t = Text(
             sudoPass=None,
             path=None,
             seek=False,
@@ -119,10 +117,10 @@ class TextTester(unittest.TestCase):
             """).strip(),
             indent=4,
             newlines=1
-        ) as t:
-            op = t(TextTester.content, wd=None, sudo=False)
-            msgd = list(op)
-            self.assertEqual(expect, t._rv)
+        )
+        op = t(TextTester.content, wd=None, sudo=False)
+        msgd = list(op)
+        self.assertEqual(expect, t._rv)
 
     def test_seek_true(self):
         change = textwrap.dedent("""
@@ -134,7 +132,7 @@ class TextTester(unittest.TestCase):
             "\n".join(("    " + i for i in change.splitlines())),
             "", # newline = 1
         ))
-        with Text(
+        t = Text(
             sudoPass=None,
             path=None,
             seek=True,
@@ -144,26 +142,26 @@ class TextTester(unittest.TestCase):
             """).strip(),
             indent=4,
             newlines=1
-        ) as t:
-            op = t(TextTester.content, wd=None, sudo=False)
-            mgs = list(op)
-            self.assertEqual(expect, t._rv)
+        )
+        op = t(TextTester.content, wd=None, sudo=False)
+        mgs = list(op)
+        self.assertEqual(expect, t._rv)
 
     def test_seek_re(self):
         expect = TextTester.content.replace(
             "# a.a = False", "a.a = True"
         )
-        with Text(
+        t = Text(
             sudoPass=None,
             path=None,
             seek="# a\\.a.+$",
             data="a.a = True",
             indent=4,
             newlines=1
-        ) as t:
-            op = t(TextTester.content, wd=None, sudo=False)
-            mgs = list(op)
-            self.assertEqual(expect, t._rv)
+        )
+        op = t(TextTester.content, wd=None, sudo=False)
+        mgs = list(op)
+        self.assertEqual(expect, t._rv)
 
     def test_enter_checks_attributes(self):
         config = """
@@ -188,7 +186,9 @@ class TextTester(unittest.TestCase):
             indent = 0
             newlines = 0
         """
-        self.fail()
+        ini = config_parser()
+        ini.read_string(config)
+        self.fail(Text.arguments(**ini["vimrc"]))
 
 
     def test_file_interaction(self):
@@ -200,21 +200,20 @@ class TextTester(unittest.TestCase):
             with open(fP, 'w') as target:
                 target.write(TextTester.content)
 
-            with Text(
+            t = Text(
                 sudoPass=None,
                 path=fP,
                 seek="# a\\.a.+$",
                 data="a.a = True",
                 indent=4,
                 newlines=1
-            ) as t:
-                list(t(TextTester.content, wd=None, sudo=False))
+            )
+            list(t(TextTester.content, wd=None, sudo=False))
 
             with open(fP, 'r') as target:
                 rv = target.read()
                 self.assertEqual(expect, rv)
 
-            print(fP)
         finally:
             os.close(fd)
             os.remove(fP)
