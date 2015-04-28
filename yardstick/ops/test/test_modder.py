@@ -16,15 +16,19 @@
 # You should have received a copy of the GNU General Public License
 # along with pyoncannon.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
 import re
 import textwrap
 import unittest
 
-#from yardstick.ops.modder import Text
+from yardstick.ops.modder import log_message
 
 class Text:
 
-    def __init__(self, sudoPass=None, **kwargs):
+    def __init__(
+        self, name="yardstick.Text", sudoPass=None, **kwargs
+    ):
+        self.name = name
         self.sudoPass = sudoPass
         for k, v in kwargs.items():
             setattr(self, k, v)
@@ -34,7 +38,25 @@ class Text:
 
     def __call__(self, content, wd=None, sudo=False):
         if isinstance(self.seek, str):
-            return None
+            rObj = re.compile(self.seek, re.MULTILINE)
+            match = rObj.search(content)
+            if match:
+                tgt = match.string[match.start():match.end()]
+                msg = log_message(
+                    logging.INFO,
+                    msg="Pattern {} matched {}".format(
+                        rObj.pattern, tgt),
+                    name=self.name)
+            else:
+                msg = log_message(
+                    logging.WARNING,
+                    msg="Pattern {} unmatched.".format(
+                        rObj.pattern),
+                    name=self.name)
+            yield msg
+            return "poo"
+            return rObj.sub(self.data, content) + "\n"
+
         elif self.seek:
             args = ( 
                 [content] +
@@ -47,7 +69,7 @@ class Text:
             return "\n".join(args)
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        return False
+        return True
 
     def success(self, rv):
         return bool(rv)
@@ -82,8 +104,12 @@ class TextTester(unittest.TestCase):
             indent=4,
             newlines=1
         ) as t:
-            rv = t(TextTester.content, wd=None, sudo=False)       
-        self.assertEqual(expect, rv)
+            op = t(TextTester.content, wd=None, sudo=False)
+            mgs = list(op)
+            try:
+                next(op)
+            except StopIteration as e: 
+                self.assertEqual(expect, e.value)
 
     def test_seek_true(self):
         change = textwrap.dedent("""
@@ -106,14 +132,34 @@ class TextTester(unittest.TestCase):
             indent=4,
             newlines=1
         ) as t:
+            op = t(TextTester.content, wd=None, sudo=False)
+            mgs = list(op)
+            try:
+                next(op)
+            except StopIteration as e: 
+                self.assertEqual(expect, e.value)
             rv = t(TextTester.content, wd=None, sudo=False)       
-        self.assertEqual(expect, rv)
 
     def test_seek_re(self):
         expect = TextTester.content.replace(
             "# a.a = False", "a.a = True"
         )
-        self.fail(expect)
+        with Text(
+            sudoPass=None,
+            path="/root/.vimrc",
+            seek="# a\\.a.+$",
+            data="a.a = True",
+            indent=4,
+            newlines=1
+        ) as t:
+            op = t(TextTester.content, wd=None, sudo=False)
+            mgs = list(op)
+            try:
+                next(op)
+            except StopIteration as e: 
+                self.assertEqual(expect, e.value)
+            else:
+                self.fail()
 
     def test_enter_checks_attributes(self):
         self.fail()
