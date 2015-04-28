@@ -30,14 +30,20 @@ class Text:
     ):
         self.name = name
         self.sudoPass = sudoPass
+        self._rv = None
         for k, v in kwargs.items():
             setattr(self, k, v)
 
     def __enter__(self):
+        if self.path is not None:
+            with open(self.path, 'r') as input_:
+                self._content = input_.read()
         return self
 
     def __call__(self, content, wd=None, sudo=False):
         if isinstance(self.seek, str):
+            args = ([textwrap.indent(self.data, ' ' * self.indent)] +
+                [""] * self.newlines)
             rObj = re.compile(self.seek, re.MULTILINE)
             match = rObj.search(content)
             if match:
@@ -47,32 +53,33 @@ class Text:
                     msg="Pattern {} matched {}".format(
                         rObj.pattern, tgt),
                     name=self.name)
+                self._rv = rObj.sub(self.data, content)
             else:
                 msg = log_message(
                     logging.WARNING,
                     msg="Pattern {} unmatched.".format(
                         rObj.pattern),
                     name=self.name)
+                self._rv = ""
+
             yield msg
-            return "poo"
-            return rObj.sub(self.data, content) + "\n"
 
         elif self.seek:
             args = ( 
                 [content] +
                 [textwrap.indent(self.data, ' ' * self.indent)] +
                 [""] * self.newlines) 
-            return "\n".join(args)
+            self._rv = "\n".join(args)
         else:
             args = ([textwrap.indent(self.data, ' ' * self.indent)] +
                 [""] * self.newlines + [content])
-            return "\n".join(args)
+            self._rv = "\n".join(args)
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        return True
-
-    def success(self, rv):
-        return bool(rv)
+        if self._rv is not None and self.path is not None:
+            with open(self.path, 'w') as output:
+                output.write(self._rv)
+        return False
 
 
 class TextTester(unittest.TestCase):
@@ -95,7 +102,7 @@ class TextTester(unittest.TestCase):
         ))
         with Text(
             sudoPass=None,
-            path="/root/.vimrc",
+            path=None,
             seek=False,
             data=textwrap.dedent("""
                 c.a = True
@@ -105,11 +112,8 @@ class TextTester(unittest.TestCase):
             newlines=1
         ) as t:
             op = t(TextTester.content, wd=None, sudo=False)
-            mgs = list(op)
-            try:
-                next(op)
-            except StopIteration as e: 
-                self.assertEqual(expect, e.value)
+            msgd = list(op)
+            self.assertEqual(expect, t._rv)
 
     def test_seek_true(self):
         change = textwrap.dedent("""
@@ -123,7 +127,7 @@ class TextTester(unittest.TestCase):
         ))
         with Text(
             sudoPass=None,
-            path="/root/.vimrc",
+            path=None,
             seek=True,
             data=textwrap.dedent("""
                 c.a = True
@@ -134,11 +138,7 @@ class TextTester(unittest.TestCase):
         ) as t:
             op = t(TextTester.content, wd=None, sudo=False)
             mgs = list(op)
-            try:
-                next(op)
-            except StopIteration as e: 
-                self.assertEqual(expect, e.value)
-            rv = t(TextTester.content, wd=None, sudo=False)       
+            self.assertEqual(expect, t._rv)
 
     def test_seek_re(self):
         expect = TextTester.content.replace(
@@ -146,7 +146,7 @@ class TextTester(unittest.TestCase):
         )
         with Text(
             sudoPass=None,
-            path="/root/.vimrc",
+            path=None,
             seek="# a\\.a.+$",
             data="a.a = True",
             indent=4,
@@ -154,12 +154,7 @@ class TextTester(unittest.TestCase):
         ) as t:
             op = t(TextTester.content, wd=None, sudo=False)
             mgs = list(op)
-            try:
-                next(op)
-            except StopIteration as e: 
-                self.assertEqual(expect, e.value)
-            else:
-                self.fail()
+            self.assertEqual(expect, t._rv)
 
     def test_enter_checks_attributes(self):
         self.fail()
