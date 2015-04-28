@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # encoding: UTF-8
 
-# This file is part of pyoncannon.
+# This file is part of yardstick.
 #
 # Turberfield is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published
@@ -14,7 +14,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with pyoncannon.  If not, see <http://www.gnu.org/licenses/>.
+# along with yardstick.  If not, see <http://www.gnu.org/licenses/>.
 
 
 __doc__ = """
