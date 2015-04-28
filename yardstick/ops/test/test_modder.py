@@ -16,77 +16,13 @@
 # You should have received a copy of the GNU General Public License
 # along with pyoncannon.  If not, see <http://www.gnu.org/licenses/>.
 
-import logging
 import os
-import re
 import tempfile
 import textwrap
 import unittest
 
-from yardstick.ops.modder import log_message
 from yardstick.ops.modder import config_parser
-
-class Text:
-
-    @staticmethod
-    def arguments(**kwargs):
-        return {k: v for k, v in kwargs.items()
-                if k in {"path", "seek", "data", "indent", "newlines"}}
-
-    def __init__(
-        self, name="yardstick.Text", **kwargs
-    ):
-        self.name = name
-        self._content = ""
-        self._rv = None
-        for k, v in kwargs.items():
-            setattr(self, k, v)
-
-    def __call__(self, content, wd=None, sudo=False, sudoPwd=None):
-        if self.path is not None:
-            try:
-                with open(self.path, 'r') as input_:
-                    self._content = input_.read()
-            except FileNotFoundError:
-                pass
-
-        if isinstance(self.seek, str):
-            args = ([textwrap.indent(self.data, ' ' * self.indent)] +
-                [""] * self.newlines)
-            rObj = re.compile(self.seek, re.MULTILINE)
-            match = rObj.search(content)
-            if match:
-                tgt = match.string[match.start():match.end()]
-                msg = log_message(
-                    logging.INFO,
-                    msg="Pattern {} matched {}".format(
-                        rObj.pattern, tgt),
-                    name=self.name)
-                self._rv = rObj.sub(self.data, content)
-            else:
-                msg = log_message(
-                    logging.WARNING,
-                    msg="Pattern {} unmatched.".format(
-                        rObj.pattern),
-                    name=self.name)
-                self._rv = ""
-
-            yield msg
-
-        elif self.seek:
-            args = ( 
-                [content] +
-                [textwrap.indent(self.data, ' ' * self.indent)] +
-                [""] * self.newlines) 
-            self._rv = "\n".join(args)
-        else:
-            args = ([textwrap.indent(self.data, ' ' * self.indent)] +
-                [""] * self.newlines + [content])
-            self._rv = "\n".join(args)
-
-        if self._rv is not None and self.path is not None:
-            with open(self.path, 'w') as output:
-                output.write(self._rv)
+from yardstick.ops.modder import Text
 
 
 class TextTester(unittest.TestCase):
@@ -188,7 +124,12 @@ class TextTester(unittest.TestCase):
         """
         ini = config_parser()
         ini.read_string(config)
-        self.fail(Text.arguments(**ini["vimrc"]))
+        kwargs = Text.arguments(**ini["vimrc"])
+        self.assertIsInstance(kwargs, dict)
+        self.assertEqual(5, len(kwargs))
+        self.assertNotIn("sudo", kwargs)
+        self.assertNotIn("action", kwargs)
+        self.assertNotIn("type", kwargs)
 
 
     def test_file_interaction(self):

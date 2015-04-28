@@ -21,10 +21,78 @@ import logging
 import platform
 import subprocess
 import re
+import textwrap
 import unittest
 
 
-class Task:
+class Text:
+
+    @staticmethod
+    def arguments(**kwargs):
+        return {
+            k: v for k, v in kwargs.items()
+            if k in {
+                "path", "seek", "data", "indent", "newlines"
+            }
+        }
+
+    def __init__(
+        self, name="yardstick.Text", **kwargs
+    ):
+        self.name = name
+        self._content = ""
+        self._rv = None
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+
+    def __call__(self, content, wd=None, sudo=False, sudoPwd=None):
+        if self.path is not None:
+            try:
+                with open(self.path, 'r') as input_:
+                    self._content = input_.read()
+            except FileNotFoundError:
+                pass
+
+        if isinstance(self.seek, str):
+            args = ([textwrap.indent(self.data, ' ' * self.indent)] +
+                [""] * self.newlines)
+            rObj = re.compile(self.seek, re.MULTILINE)
+            match = rObj.search(content)
+            if match:
+                tgt = match.string[match.start():match.end()]
+                msg = log_message(
+                    logging.INFO,
+                    msg="Pattern {} matched {}".format(
+                        rObj.pattern, tgt),
+                    name=self.name)
+                self._rv = rObj.sub(self.data, content)
+            else:
+                msg = log_message(
+                    logging.WARNING,
+                    msg="Pattern {} unmatched.".format(
+                        rObj.pattern),
+                    name=self.name)
+                self._rv = ""
+
+            yield msg
+
+        elif self.seek:
+            args = ( 
+                [content] +
+                [textwrap.indent(self.data, ' ' * self.indent)] +
+                [""] * self.newlines) 
+            self._rv = "\n".join(args)
+        else:
+            args = ([textwrap.indent(self.data, ' ' * self.indent)] +
+                [""] * self.newlines + [content])
+            self._rv = "\n".join(args)
+
+        if self._rv is not None and self.path is not None:
+            with open(self.path, 'w') as output:
+                output.write(self._rv)
+
+
+class Command:
 
     def __init__(self, sudoPass=None, **kwargs):
         self.sudoPass = sudoPass
