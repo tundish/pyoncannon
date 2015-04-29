@@ -94,41 +94,37 @@ class Text:
 
 class Command:
 
-    def __init__(self, sudoPass=None, **kwargs):
-        self.sudoPass = sudoPass
+    @staticmethod
+    def arguments(**kwargs):
+        return kwargs.get("data", "")
+
+    def __init__(
+        self, name="yardstick.Command", **kwargs
+    ):
         for k, v in kwargs.items():
             setattr(self, k, v)
+        self.args = self.data.strip()
 
-    def __enter__(self):
-        # Check attributes permit, return None if not
-        # Otherwise set args
-        self.args = []
-        return self
-
-    def __call__(self, wd=None, sudo=False):
+    def __call__(self, args, wd=None, sudo=False, sudoPwd=None):
         if sudo:
             p = subprocess.Popen(
-                ["sudo", "-S"] + self.args,
+                ["sudo", "-S"] + args,
                 cwd=wd, shell=True,
                 stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                 stderr=subprocess.DEVNULL)
             self._out, self._err = p.communicate(
-                "{}\n".format(self.sudoPass).encode("utf-8"))
+                "{}\n".format(self.sudoPwd).encode("utf-8"))
         else:
             p = subprocess.Popen(
-                self.args,
+                args,
                 cwd=wd, shell=True,
                 stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                 stderr=subprocess.DEVNULL)
             self._out, self._err = p.communicate()
-        return self.success(self._out, self._err)
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        #opportunity to clean up
-        return False
-
-    def success(self, out, err):
-        return not out.strip()
+        for msg in (self._out, self.err):
+            if msg.strip():
+                yield log_message(logging.INFO, msg=msg, name=self.name)
 
 
 def config_parser():
