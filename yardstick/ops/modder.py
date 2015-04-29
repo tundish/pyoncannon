@@ -39,13 +39,13 @@ class Text:
     def __init__(
         self, name="yardstick.Text", **kwargs
     ):
-        self.name = name
+        self._name = name
         self._content = ""
         self._rv = None
         for k, v in kwargs.items():
             setattr(self, k, v)
 
-    def __call__(self, content, wd=None, sudo=False, sudoPwd=None):
+    def __call__(self, content=None, wd=None, sudo=False, sudoPwd=None):
         if self.path is not None:
             try:
                 with open(self.path, 'r') as input_:
@@ -53,6 +53,7 @@ class Text:
             except FileNotFoundError:
                 pass
 
+        content = self._content if content is None else content
         if isinstance(self.seek, str):
             args = ([textwrap.indent(self.data, ' ' * self.indent)] +
                 [""] * self.newlines)
@@ -64,14 +65,14 @@ class Text:
                     logging.INFO,
                     msg="Pattern {} matched {}".format(
                         rObj.pattern, tgt),
-                    name=self.name)
+                    name=self._name)
                 self._rv = rObj.sub(self.data, content)
             else:
                 msg = log_message(
                     logging.WARNING,
                     msg="Pattern {} unmatched.".format(
                         rObj.pattern),
-                    name=self.name)
+                    name=self._name)
                 self._rv = ""
 
             yield msg
@@ -96,16 +97,18 @@ class Command:
 
     @staticmethod
     def arguments(**kwargs):
-        return kwargs.get("data", "")
+        return {"data": kwargs.get("data", "")}
 
     def __init__(
         self, name="yardstick.Command", **kwargs
     ):
+        self._name = name
         for k, v in kwargs.items():
             setattr(self, k, v)
-        self.args = self.data.strip()
+        self._args = self.data.strip()
 
-    def __call__(self, args, wd=None, sudo=False, sudoPwd=None):
+    def __call__(self, args=None, wd=None, sudo=False, sudoPwd=None):
+        args = self._args if args is None else args
         if sudo:
             p = subprocess.Popen(
                 ["sudo", "-S"] + args,
@@ -113,7 +116,7 @@ class Command:
                 stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                 stderr=subprocess.DEVNULL)
             self._out, self._err = p.communicate(
-                "{}\n".format(self.sudoPwd).encode("utf-8"))
+                "{}\n".format(sudoPwd).encode("utf-8"))
         else:
             p = subprocess.Popen(
                 args,
@@ -122,9 +125,11 @@ class Command:
                 stderr=subprocess.DEVNULL)
             self._out, self._err = p.communicate()
 
-        for msg in (self._out, self.err):
-            if msg.strip():
-                yield log_message(logging.INFO, msg=msg, name=self.name)
+        for msg in (self._out, self._err):
+            if not msg is None and msg.strip():
+                yield log_message(
+                    logging.INFO, msg=msg.decode("utf-8"), name=self._name
+                )
 
 
 def config_parser():
@@ -197,13 +202,29 @@ def lockstep():
 
         taskNr = channel.receive()
         while taskNr is not None:
-            sec = ini.sections()[taskNr]
+            secName = ini.sections()[taskNr]
             msg = log_message(
-                logging.INFO, msg="Task '{}'".format(sec),
+                logging.INFO, msg="Task '{}'".format(secName),
                 name=logName
             )
             channel.send(msg)
-            #typ = __public__[data.pop("type", None)]
+
+            section = ini[secName]
+            sudo = section.getboolean("sudo", fallback=None)
+            typ = section.get("type", fallback=None)
+            Op = {i.__name__: i for i in (Command, Text)}.get(typ, None)
+            if any(i is None for i in (sudo, typ, Op)):
+                msg = log_message(
+                    logging.ERROR, msg="Bad parameters.",
+                    name=logName
+                )
+                channel.send(msg)
+            else:
+                #op = Op(**Op.arguments(**dict(ini.items(secName, raw=False))))
+                op = Op(**Op.arguments(**section))
+                for msg in op(sudo=sudo, sudoPwd=sudoPwd):
+                    channel.send(msg)
+            
             channel.send(taskNr)
             taskNr = channel.receive()
 
@@ -223,17 +244,6 @@ def lockstep():
         )
     finally:
         channel.send(None)
-
-
-__public__ = {
-    "file_write": None,
-    None: None,
-    }
-
-
-__all__ = [
-    "config_parser", "config_settings", "log_message",
-] + list((i for i in __public__.keys() if i is not None)) 
 
 
 if __name__ == "__channelexec__":
