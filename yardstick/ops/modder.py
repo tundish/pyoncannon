@@ -22,6 +22,7 @@ import platform
 import subprocess
 import re
 import textwrap
+import time
 import unittest
 
 
@@ -131,6 +132,35 @@ class Command:
                     logging.INFO, msg=msg.decode("utf-8"), name=self._name
                 )
 
+class Wait(Command):
+
+    @staticmethod
+    def arguments(**kwargs):
+        return {
+            "interval": float(kwargs.get("interval", "2.0")),
+            "limit": int(kwargs.get("limit", "60")),
+            "data": kwargs.get("data", ""),
+            "condition": kwargs.get("condition", None),
+        }
+
+    def __init__(
+        self, name="yardstick.Wait", **kwargs
+    ):
+        super().__init__(name, **kwargs)
+
+    def __call__(self, args=None, wd=None, sudo=False, sudoPwd=None):
+        if not self.data or self.condition is None:
+            time.sleep(self.interval)
+            return
+
+        n = 0
+        match = None
+        rObj = re.compile(self.condition, re.MULTILINE)
+        while match is None and n < self.limit:
+            time.sleep(self.interval)
+            yield from super().__call__(args, wd, sudo, sudoPwd)
+            match = rObj.search(self._out)
+            n += 1
 
 def config_parser():
     rv = configparser.ConfigParser(
