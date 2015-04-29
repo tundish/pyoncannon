@@ -161,16 +161,6 @@ def log_message(lvl, msg, *args, **kwargs):
     return vars(msg)
 
 
-def text2task(text, types):
-    """
-    Read a config section and return a Task.
-    """
-    which = {i.__name__: i for i in types}
-    things = rson.loads(text)
-    things = things if isinstance(things, list) else [things]
-    return [which.get(i.pop("type", None), dict)(**i) for i in things]
-
-
 def lockstep():
     """
     Executed on the target by the `auto` command.
@@ -220,7 +210,6 @@ def lockstep():
                 )
                 channel.send(msg)
             else:
-                #op = Op(**Op.arguments(**dict(ini.items(secName, raw=False))))
                 op = Op(**Op.arguments(**section))
                 for msg in op(sudo=sudo, sudoPwd=sudoPwd):
                     channel.send(msg)

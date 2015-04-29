@@ -132,10 +132,27 @@ def gen_check_tasks(args):
 def loop_over_lockstep(channel, name, ini):
     log = logging.getLogger(name)
 
-    for n, s in enumerate(ini.sections()):
-        log.debug(s)
-        if ini.get(s, "action", fallback="remote") == "local":
+    for n, sName in enumerate(ini.sections()):
+        log.debug(sName)
+        if ini.get(sName, "action", fallback="remote") == "local":
             log.debug("Section {} needs local action.".format(n))
+            section = ini[sName]
+            sudo = section.getboolean("sudo", fallback=None)
+            typ = section.get("type", fallback=None)
+            Op = {
+                i.__name__: i for i in (
+                    yardstick.ops.modder.Command,
+                    yardstick.ops.modder.Text
+                )
+            }.get(typ, None)
+            if any(i is None for i in (sudo, typ, Op)):
+                log.error("Bad parameters")
+            else:
+                op = Op(**Op.arguments(**section))
+                for msg in op(sudo=sudo, sudoPwd=sudoPwd):
+                    log.handle(msg)
+                channel.send(n)
+            
         else:
             channel.send(n)
             loop_over_logrecords(channel, name, n)
