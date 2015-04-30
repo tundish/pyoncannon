@@ -6,7 +6,7 @@ Skeleton files
 ==============
 
 Before we manually edit any configuration, or create any new users, we need to
-provide sensible `rc` files for a text editor (vi in this case).
+provide sensible `rc` files for a text editor (`vi` in this case).
 
 Modifications
 ~~~~~~~~~~~~~
@@ -14,8 +14,8 @@ Modifications
 Root account
 ------------
 
-On first boot, the editor available will be very basic. It reads the `.exrc`
-file only.
+On first boot, the `vi` editor available to us will be very basic. It reads the
+`.exrc` file only.
 
 `/root/.exrc`::
 
@@ -23,7 +23,7 @@ file only.
     set tabstop=4
     set number
 
-We'll also create a `/root/.vimrc` file for later::
+We'll also create a `/root/.vimrc` file for later when we have `vim`::
 
     set textwidth=79
     set shiftwidth=4
