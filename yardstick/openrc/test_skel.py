@@ -55,3 +55,42 @@ class VimrcTests(unittest.TestCase):
 
     def test_root_vimrc(self):
         self.assertTrue(os.path.isfile("/root/.vimrc"))
+
+
+class SkelTests(unittest.TestCase):
+    """
+    Checks for .exrc and .vimrc files in:
+
+    * `/root`
+    * `/etc/skel`
+
+    """
+
+    vimrc = textwrap.dedent("""
+        set textwidth=79
+        set shiftwidth=4
+        set tabstop=4
+        set expandtab
+        set number
+        set ruler
+        set backspace=2
+        syntax on
+        set background=dark
+        colorscheme desert
+    """).strip()
+
+    def test_skel_purge(self):
+        items = os.listdir("/etc/skel")
+        self.assertNotIn("Manjaro", items)
+        self.assertNotIn(".mozilla", items)
+
+    def test_skel_content(self):
+        self.assertTrue(os.path.isfile("/etc/skel/.vimrc"))
+        with open("/etc/skel/.vimrc", 'r') as rc:
+            content = rc.read().splitlines()
+            self.assertTrue(content[0])
+
+        for line in (i.strip() for i in SkelTests.vimrc.splitlines()):
+            with self.subTest(line=line):
+                self.assertIn(line, content)
+

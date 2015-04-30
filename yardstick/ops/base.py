@@ -109,6 +109,7 @@ def gen_check_tasks(args):
         for mod in ldr.discover(i)
         for suite in mod for meth in suite
     }
+    print(testClasses)
 
     for class_ in testClasses:
         checkLines, nr = inspect.getsourcelines(
