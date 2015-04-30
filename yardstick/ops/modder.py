@@ -30,12 +30,16 @@ class Text:
 
     @staticmethod
     def arguments(**kwargs):
-        return {
-            k: v for k, v in kwargs.items()
-            if k in {
-                "path", "seek", "data", "indent", "newlines"
-            }
+        rv = {
+                "path": kwargs.get("path", ""),
+                "seek": kwargs.get("seek", "False"),
+                "data": kwargs.get("data", ""),
+                "indent": int(kwargs.get("indent", "0")),
+                "newlines": int(kwargs.get("newlines", "0")),
         }
+        if rv["seek"] in ("True", "False"):
+            rv["seek"] = bool(rv["seek"])
+        return rv
 
     def __init__(
         self, name="yardstick.Text", **kwargs
@@ -63,11 +67,11 @@ class Text:
             if match:
                 tgt = match.string[match.start():match.end()]
                 msg = log_message(
-                    logging.INFO,
-                    msg="Pattern {} matched {}".format(
-                        rObj.pattern, tgt),
+                    logging.DEBUG,
+                    msg="Pattern {} on {} matched {}".format(
+                        rObj.pattern, match.string, tgt),
                     name=self._name)
-                self._rv = rObj.sub(self.data, content)
+                self._rv = rObj.sub(self.data, content, count=0)
             else:
                 msg = log_message(
                     logging.WARNING,
@@ -88,6 +92,8 @@ class Text:
             args = ([textwrap.indent(self.data, ' ' * self.indent)] +
                 [""] * self.newlines + [content])
             self._rv = "\n".join(args)
+
+        #yield log_message(logging.DEBUG, msg=self._rv, name=self._name)
 
         if self._rv is not None and self.path is not None:
             with open(self.path, 'w') as output:
