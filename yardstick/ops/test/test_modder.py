@@ -93,6 +93,23 @@ class TextTester(unittest.TestCase):
             path=None,
             seek="# a\\.a[\\w =]+$",
             data="a.a = True",
+            indent=0,
+            newlines=0
+        )
+        op = t(TextTester.content, wd=None, sudo=False)
+        mgs = list(op)
+        self.assertEqual(expect, t._rv)
+
+    def test_seek_re_indent(self):
+        expect = TextTester.content.replace(
+            "# a.a = False", "    a.a = True"
+        )
+        t = Text(
+            sudoPass=None,
+            path=None,
+            seek="# a\\.a[\\w =]+$",
+            data="a.a = True",
+            indent=4,
             newlines=0
         )
         op = t(TextTester.content, wd=None, sudo=False)
@@ -146,6 +163,7 @@ class TextTester(unittest.TestCase):
                 path=fP,
                 seek="# a\\.a[\\w =]+$",
                 data="a.a = True",
+                indent=0,
                 newlines=0
             )
             list(t(None, wd=None, sudo=False))

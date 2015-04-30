@@ -70,7 +70,8 @@ class Text:
                         rObj.pattern, tgt),
                     name=self._name)
                 self._rv = "\n".join(
-                    [rObj.sub(self.data, content, count=0)] +
+                    [rObj.sub(textwrap.indent(self.data, ' ' * self.indent),
+                     content, count=0)] +
                     [""] * self.newlines
                 )
             else:
