@@ -31,15 +31,11 @@ class VimrcTests(unittest.TestCase):
 
     """
 
-    data = textwrap.dedent("""
+    exrc = textwrap.dedent("""
         set shiftwidth=4
         set tabstop=4
-        set textwidth=79
-        set expandtab
-        set backspace=2
         set number
-        set ruler
-    """)
+    """).strip()
 
     ini = None
     settings = None
@@ -49,13 +45,12 @@ class VimrcTests(unittest.TestCase):
 
     def test_root_exrc(self):
         self.assertTrue(os.path.isfile("/root/.exrc"))
+        with open("/root/.exrc", 'r') as rc:
+            content = rc.read().splitlines()
+
+        for line in (i.strip() for i in VimrcTests.exrc.splitlines()):
+            with self.subTest(line=line):
+                self.assertIn(line, content)
 
     def test_root_vimrc(self):
         self.assertTrue(os.path.isfile("/root/.vimrc"))
-
-    def tost_top_content(self):
-        data = textwrap.dedent("""
-            syntax enable   " enable syntax processing
-        """)
-        differ = difflib.SequenceMatcher(a=VimrcTests.data, b=data)
-        self.assertAlmostEqual(differ.ratio(), 1.0, delta=0.09)
