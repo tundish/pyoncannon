@@ -11,7 +11,7 @@ Contents:
    :maxdepth: 1
    :numbered:
 
-   vimrc
+   skel
    access
 
 .. include:: ../../README.rst

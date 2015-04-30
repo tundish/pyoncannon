@@ -17,7 +17,15 @@ import os
 import shlex
 import sys
 
-sys.path.append(os.path.join("..", ".."))
+
+try:
+    import pkg_resources
+    sys.path.append(os.path.abspath(os.path.join(
+        pkg_resources.resource_filename("yardstick", ""),
+        "..")
+    ))
+except ImportError:
+    sys.path.append(os.path.abspath(os.path.join("..", "..")))
 
 import yardstick
 

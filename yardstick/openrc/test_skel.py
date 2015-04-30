@@ -23,6 +23,13 @@ import unittest
 
 
 class VimrcTests(unittest.TestCase):
+    """
+    Checks for .exrc and .vimrc files in:
+
+    * `/root`
+    * `/etc/skel`
+
+    """
 
     data = textwrap.dedent("""
         set shiftwidth=4
