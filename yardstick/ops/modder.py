@@ -60,8 +60,6 @@ class Text:
 
         content = self._content if content is None else content
         if isinstance(self.seek, str):
-            args = ([textwrap.indent(self.data, ' ' * self.indent)] +
-                [""] * self.newlines)
             rObj = re.compile(self.seek, re.DOTALL | re.MULTILINE)
             match = rObj.search(content)
             if match:
@@ -71,7 +69,10 @@ class Text:
                     msg="Pattern {} matched {}".format(
                         rObj.pattern, tgt),
                     name=self._name)
-                self._rv = rObj.sub(self.data, content, count=0)
+                self._rv = "\n".join(
+                    [rObj.sub(self.data, content, count=0)] +
+                    [""] * self.newlines
+                )
             else:
                 msg = log_message(
                     logging.WARNING,

@@ -47,6 +47,7 @@ class VimrcTests(unittest.TestCase):
         self.assertTrue(os.path.isfile("/root/.exrc"))
         with open("/root/.exrc", 'r') as rc:
             content = rc.read().splitlines()
+            self.assertTrue(content[0])
 
         for line in (i.strip() for i in VimrcTests.exrc.splitlines()):
             with self.subTest(line=line):

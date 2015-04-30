@@ -31,6 +31,7 @@ class TextTester(unittest.TestCase):
         # a.a = False
         b.a = True
         b.b = "default"
+
     """).lstrip()
 
     def test_seek_false(self):
@@ -92,8 +93,7 @@ class TextTester(unittest.TestCase):
             path=None,
             seek="# a\\.a[\\w =]+$",
             data="a.a = True",
-            indent=4,
-            newlines=1
+            newlines=0
         )
         op = t(TextTester.content, wd=None, sudo=False)
         mgs = list(op)
@@ -146,8 +146,7 @@ class TextTester(unittest.TestCase):
                 path=fP,
                 seek="# a\\.a[\\w =]+$",
                 data="a.a = True",
-                indent=4,
-                newlines=1
+                newlines=0
             )
             list(t(None, wd=None, sudo=False))
 
@@ -163,6 +162,7 @@ class TextTester(unittest.TestCase):
         expect = textwrap.dedent("""
         a.a = True
         a.b = False
+
         """).lstrip()
         fd, fP = tempfile.mkstemp(text=True)
         try:
@@ -178,7 +178,7 @@ class TextTester(unittest.TestCase):
 
             with open(fP, 'r') as target:
                 rv = target.read()
-                self.assertEqual(expect, rv)
+                self.assertEqual(expect + "\n", rv)
 
         finally:
             os.close(fd)
@@ -204,7 +204,7 @@ class TextTester(unittest.TestCase):
 
             with open(fP, 'r') as target:
                 rv = target.read()
-                self.assertEqual(expect, rv)
+                self.assertEqual(expect + "\n", rv)
 
         finally:
             os.close(fd)
