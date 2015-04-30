@@ -68,8 +68,8 @@ class Text:
                 tgt = match.string[match.start():match.end()]
                 msg = log_message(
                     logging.DEBUG,
-                    msg="Pattern {} on {} matched {}".format(
-                        rObj.pattern, match.string, tgt),
+                    msg="Pattern {} matched {}".format(
+                        rObj.pattern, tgt),
                     name=self._name)
                 self._rv = rObj.sub(self.data, content, count=0)
             else:
