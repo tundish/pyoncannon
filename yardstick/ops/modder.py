@@ -62,7 +62,7 @@ class Text:
         if isinstance(self.seek, str):
             args = ([textwrap.indent(self.data, ' ' * self.indent)] +
                 [""] * self.newlines)
-            rObj = re.compile(self.seek, re.MULTILINE)
+            rObj = re.compile(self.seek, re.DOTALL | re.MULTILINE)
             match = rObj.search(content)
             if match:
                 tgt = match.string[match.start():match.end()]
@@ -98,6 +98,7 @@ class Text:
         if self._rv is not None and self.path is not None:
             with open(self.path, 'w') as output:
                 output.write(self._rv)
+                output.flush()
 
 
 class Command:

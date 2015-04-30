@@ -90,7 +90,7 @@ class TextTester(unittest.TestCase):
         t = Text(
             sudoPass=None,
             path=None,
-            seek="# a\\.a.+$",
+            seek="# a\\.a[\\w =]+$",
             data="a.a = True",
             indent=4,
             newlines=1
@@ -99,7 +99,7 @@ class TextTester(unittest.TestCase):
         mgs = list(op)
         self.assertEqual(expect, t._rv)
 
-    def test_enter_checks_attributes(self):
+    def test_arguments_checks_attributes(self):
         config = """
             [vimrc]
             sudo = False
@@ -144,12 +144,63 @@ class TextTester(unittest.TestCase):
             t = Text(
                 sudoPass=None,
                 path=fP,
-                seek="# a\\.a.+$",
+                seek="# a\\.a[\\w =]+$",
                 data="a.a = True",
                 indent=4,
                 newlines=1
             )
-            list(t(TextTester.content, wd=None, sudo=False))
+            list(t(None, wd=None, sudo=False))
+
+            with open(fP, 'r') as target:
+                rv = target.read()
+                self.assertEqual(expect, rv)
+
+        finally:
+            os.close(fd)
+            os.remove(fP)
+
+    def test_empty_file_re(self):
+        expect = textwrap.dedent("""
+        a.a = True
+        a.b = False
+        """).lstrip()
+        fd, fP = tempfile.mkstemp(text=True)
+        try:
+            t = Text(
+                sudoPass=None,
+                path=fP,
+                seek=".*",
+                data=expect,
+                indent=0,
+                newlines=1
+            )
+            list(t(None, wd=None, sudo=False))
+
+            with open(fP, 'r') as target:
+                rv = target.read()
+                self.assertEqual(expect, rv)
+
+        finally:
+            os.close(fd)
+            os.remove(fP)
+
+    def test_repeat_empty_file_re(self):
+        expect = textwrap.dedent("""
+        a.a = True
+        a.b = False
+        """).lstrip()
+        fd, fP = tempfile.mkstemp(text=True)
+        try:
+            t = Text(
+                sudoPass=None,
+                path=fP,
+                seek=".*",
+                data=expect,
+                indent=0,
+                newlines=1
+            )
+            list(t(None, wd=None, sudo=False))
+            list(t(None, wd=None, sudo=False))
 
             with open(fP, 'r') as target:
                 rv = target.read()
