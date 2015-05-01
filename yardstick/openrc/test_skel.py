@@ -59,10 +59,7 @@ class VimrcTests(unittest.TestCase):
 
 class SkelTests(unittest.TestCase):
     """
-    Checks for .exrc and .vimrc files in:
-
-    * `/root`
-    * `/etc/skel`
+    Checks for unecessary items in `/etc/skel`.
 
     """
 

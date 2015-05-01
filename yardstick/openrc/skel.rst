@@ -40,7 +40,8 @@ We'll also create a `/root/.vimrc` file for later when we have `vim`::
 User accounts
 -------------
 
-* modify /etc/skel
+We will modify `/etc/skel` so that new users get an account profile
+suitable for a server environment.
 
 Task definition
 ~~~~~~~~~~~~~~~
@@ -54,3 +55,4 @@ Tests
 ~~~~~
 
 .. autoclass:: yardstick.openrc.test_skel.VimrcTests
+.. autoclass:: yardstick.openrc.test_skel.SkelTests
