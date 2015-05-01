@@ -239,7 +239,7 @@ def lockstep():
             channel.send(msg)
 
             section = ini[secName]
-            sudo = section.getboolean("sudo", fallback=None)
+            sudo = section.getboolean("sudo", fallback=False)
             typ = section.get("type", fallback=None)
             Op = {i.__name__: i for i in (Command, Text)}.get(typ, None)
             if any(i is None for i in (sudo, typ, Op)):

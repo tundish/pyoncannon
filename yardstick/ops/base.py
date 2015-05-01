@@ -109,7 +109,6 @@ def gen_check_tasks(args):
         for mod in ldr.discover(i)
         for suite in mod for meth in suite
     }
-    print(testClasses)
 
     for class_ in testClasses:
         checkLines, nr = inspect.getsourcelines(
@@ -138,7 +137,7 @@ def loop_over_lockstep(channel, name, ini):
         if ini.get(sName, "action", fallback="remote") == "local":
             log.debug("Section {} needs local action.".format(n))
             section = ini[sName]
-            sudo = section.getboolean("sudo", fallback=None)
+            sudo = section.getboolean("sudo", fallback=False)
             typ = section.get("type", fallback=None)
             Op = {
                 i.__name__: i for i in (
