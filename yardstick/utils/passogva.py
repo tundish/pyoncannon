@@ -46,15 +46,16 @@ grams = ('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l',
 vowel_grams = ('a', 'e', 'i', 'o', 'u', 'y')
 
 occurrence_frequencies = {
-    'a'  : 10,      'b'  :  8,      'c'  : 12,      'd'  : 12,
-    'e'  : 12,      'f'  :  8,      'g'  :  8,      'h'  :  6,
-    'i'  : 10,      'j'  :  8,      'k'  :  8,      'l'  :  6,
-    'm'  :  6,      'n'  : 10,      'o'  : 10,      'p'  :  6,
-    'r'  : 10,      's'  :  8,      't'  : 10,      'u'  :  6,
-    'v'  :  8,      'w'  :  8,      'x'  :  1,      'y'  :  8,
-    'z'  :  1,      'ch' :  1,      'gh' :  1,      'ph' :  1,
-    'rh' :  1,      'sh' :  2,      'th' :  1,      'wh' :  1,
-    'qu' :  1,      'ck' :  1,}
+    'a': 10, 'b': 8, 'c': 12, 'd': 12,
+    'e': 12, 'f': 8, 'g': 8, 'h': 6,
+    'i': 10, 'j': 8, 'k': 8, 'l': 6,
+    'm': 6, 'n': 10, 'o': 10, 'p': 6,
+    'r': 10, 's': 8, 't': 10, 'u': 6,
+    'v': 8, 'w': 8, 'x': 1, 'y': 8,
+    'z': 1, 'ch': 1, 'gh': 1, 'ph': 1,
+    'rh': 1, 'sh': 2, 'th': 1, 'wh': 1,
+    'qu': 1, 'ck': 1,
+}
 
 numbers = []
 for gram in grams:
@@ -96,16 +97,16 @@ ANY_COMBINATION = 0x00
 
 gram_rules = dict()
 for gram in grams:
-    gram_rules[ gram ] = NO_SPECIAL_RULE
+    gram_rules[gram] = NO_SPECIAL_RULE
 
 for gram in vowel_grams:
-    gram_rules[ gram ] = VOWEL
+    gram_rules[gram] = VOWEL
 
 
 gram_rules['e'] |= NO_FINAL_SPLIT
 gram_rules['y'] |= ALTERNATE_VOWEL
 
-gram_rules['x']  = NOT_BEGIN_SYLLABLE
+gram_rules['x'] = NOT_BEGIN_SYLLABLE
 gram_rules['ck'] = NOT_BEGIN_SYLLABLE
 
 
@@ -1353,12 +1354,12 @@ def marked(flag, first_unit, second_unit):
 # Generates a random word, as well as its hyphenated form.  The
 # length of the returned word will be between minlen and maxlen.
 
-def generate_password(minlen = MIN_LENGTH_PASSWORD,
-                      maxlen = MAX_LENGTH_PASSWORD):
+def generate_password(minlen=MIN_LENGTH_PASSWORD,
+                      maxlen=MAX_LENGTH_PASSWORD):
 
     if (minlen > maxlen):
         print("minlen minlen is greater than maxlen maxlen\n")
-        return ('','')
+        return ('', '')
 
 
     #
@@ -1366,7 +1367,7 @@ def generate_password(minlen = MIN_LENGTH_PASSWORD,
     # so we take the short cut and return empty words.
     #
     if (maxlen == 0):
-        return ('','')
+        return ('', '')
 
 
     word = ''
@@ -1380,7 +1381,7 @@ def generate_password(minlen = MIN_LENGTH_PASSWORD,
 
     if (word == "" and (minlen > 0)):
         print("failed to generate an acceptable random password.\n")
-        return ('','')
+        return ('', '')
 
 
     return (word, hyphenated_word)
@@ -1395,7 +1396,7 @@ def random_element(ar):
         keys = ar.keys()
     except:
         keys = range(len(ar))
-    return ar[ keys[random.randint(0, len(keys) - 1)] ]
+    return ar[keys[random.randint(0, len(keys) - 1)]]
 
 
 
@@ -1411,7 +1412,7 @@ def _random_word(pwlen):
 
     max_retries = (4 * pwlen) + len(grams)
 
-    tries = 0 # count of retries.
+    tries = 0  # count of retries.
 
 
     # word_units used to be an array of indices into the 'rules' C-array.
@@ -1443,20 +1444,15 @@ def _random_word(pwlen):
         # Otherwise, append the syllable to the word.
         #
         if not (
-            _improper_word(word_units)
-             or
+            _improper_word(word_units) or
             (
-                 word == ''
-                 and
-                 _have_initial_y(syllable_units)
+                word == '' and
+                _have_initial_y(syllable_units)
+            ) or (
+                len(word + new_syllable) == pwlen and
+                _have_final_split(syllable_units)
             )
-             or
-             (
-                 len(word + new_syllable) == pwlen
-                 and
-                 _have_final_split(syllable_units)
-            )
-           ):
+        ):
             word = word + new_syllable
             word_syllables.append(new_syllable)
 
@@ -1529,10 +1525,11 @@ def _improper_word(units):
         # but in some cases it would have gone unnoticed for units between syllables
         # (e.g., when saved units in get_syllable() were not used).
         #
-        if (unit_count > 0
-            and digram_rules[units[unit_count-1]][units[unit_count]]
-            & ILLEGAL_PAIR):
-            return 1 # Failure!
+        if (
+                unit_count > 0 and
+                digram_rules[units[unit_count - 1]][units[unit_count]] & ILLEGAL_PAIR
+        ):
+            return 1  # Failure!
 
 
         if (unit_count >= 2):
@@ -1550,31 +1547,27 @@ def _improper_word(units):
             #
             # Vowel check.
             #
-            if ((
-                (gram_rules[units[unit_count - 2]] & VOWEL)
-                and
-                not (gram_rules[units[unit_count - 2]] & ALTERNATE_VOWEL)
-                and
-                (gram_rules[units[unit_count - 1]] & VOWEL)
-                and
-                (gram_rules[units[unit_count    ]] & VOWEL)
-                )
-            or
-            #
-            # Consonant check.
-            #
+            if (
                 (
-                not (gram_rules[units[unit_count - 2]] & VOWEL)
-                and
-                not (gram_rules[units[unit_count - 1]] & VOWEL)
-                and
-                not (gram_rules[units[unit_count    ]] & VOWEL)
-                )):
-                return 1 # Failure!
+                    (gram_rules[units[unit_count - 2]] & VOWEL) and not
+                    (gram_rules[units[unit_count - 2]] & ALTERNATE_VOWEL) and
+                    (gram_rules[units[unit_count - 1]] & VOWEL) and
+                    (gram_rules[units[unit_count]] & VOWEL)
+                ) or
+                #
+                # Consonant check.
+                #
+                (
+                    not (gram_rules[units[unit_count - 2]] & VOWEL) and
+                    not (gram_rules[units[unit_count - 1]] & VOWEL) and
+                    not (gram_rules[units[unit_count]] & VOWEL)
+                )
+            ):
+                return 1  # Failure!
 
 
 
-    return 0 # success
+    return 0  # success
 
 
 
@@ -1631,8 +1624,7 @@ def _have_final_split(units):
     #
     # Return TRUE iff the only vowel was e, found at the end if the word.
     #
-    return ((vowel_count == 1)
-             and (gram_rules[units[len(units) - 1]] & NO_FINAL_SPLIT))
+    return ((vowel_count == 1) and (gram_rules[units[len(units) - 1]] & NO_FINAL_SPLIT))
 
 
 
@@ -1643,9 +1635,7 @@ def digram_is_invalid(first_unit, second_unit, current_unit_num,
     #
     # Reject ILLEGAL_PAIRS of units.
     #
-    if (marked(ILLEGAL_PAIR,
-                first_unit,
-                second_unit)):
+    if (marked(ILLEGAL_PAIR, first_unit, second_unit)):
         return 1
 
 
@@ -1654,10 +1644,7 @@ def digram_is_invalid(first_unit, second_unit, current_unit_num,
     # syllables when the syllable has no vowels
     # in it.
     #
-    if (marked(BREAK,
-                first_unit,
-                second_unit) and
-        (vowel_count == 0)):
+    if (marked(BREAK, first_unit, second_unit) and (vowel_count == 0)):
         return 1
 
 
@@ -1666,11 +1653,10 @@ def digram_is_invalid(first_unit, second_unit, current_unit_num,
     # no previous unit was a vowel and neither is
     # this one.
     #
-    if (marked(END,
-                first_unit,
-                second_unit) and
-        (vowel_count == 0) and
-        not (gram_rules[second_unit] & VOWEL)):
+    if (
+        marked(END, first_unit, second_unit) and
+        (vowel_count == 0) and not (gram_rules[second_unit] & VOWEL)
+    ):
         return 1
 
 
@@ -1679,9 +1665,7 @@ def digram_is_invalid(first_unit, second_unit, current_unit_num,
         # Reject the unit if we are at the starting
         # digram of a syllable and it does not fit.
         #
-        if (marked(NOT_BEGIN,
-                    first_unit,
-                    second_unit)):
+        if (marked(NOT_BEGIN, first_unit, second_unit)):
             return 1
 
     else:
@@ -1694,12 +1678,11 @@ def digram_is_invalid(first_unit, second_unit, current_unit_num,
         # Also, the combination does not sound to good even
         # if not split.
         #
-        if ((current_unit_num == 2) and
-            marked(BEGIN,
-                    first_unit,
-                    second_unit) and
-            (gram_rules[units_in_syllable[0]] &
-              ALTERNATE_VOWEL)):
+        if (
+            (current_unit_num == 2) and
+            marked(BEGIN, first_unit, second_unit) and
+            (gram_rules[units_in_syllable[0]] & ALTERNATE_VOWEL)
+        ):
             return 1
 
 
@@ -1708,10 +1691,7 @@ def digram_is_invalid(first_unit, second_unit, current_unit_num,
         # should reject any digram that cannot end a
         # syllable.
         #
-        if (marked(NOT_END,
-                    first_unit,
-                    second_unit) and
-            (length_left == 0)):
+        if (marked(NOT_END, first_unit, second_unit) and (length_left == 0)):
             return 1
 
 
@@ -1721,11 +1701,10 @@ def digram_is_invalid(first_unit, second_unit, current_unit_num,
         # digram that would end the syllable is not
         # allowed to end a syllable.
         #
-        if (marked(BREAK,
-                    first_unit,
-                    second_unit) and
-            (digram_rules[units_in_syllable[current_unit_num-2]]
-              [first_unit] & NOT_END)):
+        if (
+            marked(BREAK, first_unit, second_unit) and
+            (digram_rules[units_in_syllable[current_unit_num - 2]][first_unit] & NOT_END)
+        ):
             return 1
 
 
@@ -1735,11 +1714,10 @@ def digram_is_invalid(first_unit, second_unit, current_unit_num,
         # expects a vowel preceding it and there
         # is none.
         #
-        if (marked(PREFIX,
-                    first_unit,
-                    second_unit) and
-            not (gram_rules[ units_in_syllable[current_unit_num-2] ] &
-               VOWEL)):
+        if (
+            marked(PREFIX, first_unit, second_unit) and not
+            (gram_rules[units_in_syllable[current_unit_num - 2]] & VOWEL)
+        ):
             return 1
 
 
