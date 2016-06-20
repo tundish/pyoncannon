@@ -118,7 +118,7 @@ class Command:
         self._name = name
         for k, v in kwargs.items():
             setattr(self, k, v)
-        self._args = self.data.strip()
+        self._args = self.data.strip().split()
 
     def __call__(self, args=None, wd=None, sudo=False, sudoPwd=None):
         args = self._args if args is None else args
@@ -128,6 +128,7 @@ class Command:
                 cwd=wd, shell=True,
                 stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                 stderr=subprocess.DEVNULL)
+            yield log_message(logging.DEBUG, msg=str(p), name=self._name)
             self._out, self._err = p.communicate(
                 "{}\n".format(sudoPwd).encode("utf-8"))
         else:
@@ -170,8 +171,9 @@ class Wait(Command):
         rObj = re.compile(self.condition, re.MULTILINE)
         while match is None and n < self.limit:
             time.sleep(self.interval)
-            yield from super().__call__(args, wd, sudo, sudoPwd)
-            match = rObj.search(self._out)
+            for result in super().__call__(args, wd, sudo, sudoPwd):
+                yield result
+                match = rObj.search(result["msg"])
             n += 1
 
 def config_parser():
@@ -244,7 +246,7 @@ def lockstep():
             section = ini[secName]
             sudo = section.getboolean("sudo", fallback=False)
             typ = section.get("type", fallback=None)
-            Op = {i.__name__: i for i in (Command, Text)}.get(typ, None)
+            Op = {i.__name__: i for i in (Command, Text, Wait)}.get(typ, None)
             if any(i is None for i in (sudo, typ, Op)):
                 msg = log_message(
                     logging.ERROR, msg="Bad parameters.",
