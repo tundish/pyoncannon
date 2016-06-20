@@ -1924,19 +1924,17 @@ def get_syllable(pwlen, saved_pair):
                     # We are not at the start of a syllable.
                     # Save the previous unit for later tests.
                     #
-                    last_unit = units_in_syllable[current_unit-1]
+                    last_unit = units_in_syllable[current_unit - 1]
 
                     #
                     # There are some digram tests that are
                     # universally true.  We test them out.
                     #
 
-                    if (digram_is_invalid(last_unit,
-                                               unit,
-                                               current_unit,
-                                               length_left,
-                                               units_in_syllable,
-                                               vowel_count)):
+                    if digram_is_invalid(
+                        last_unit, unit, current_unit, length_left,
+                        units_in_syllable, vowel_count
+                    ):
                         rule_broken = 1
 
 
@@ -1945,18 +1943,21 @@ def get_syllable(pwlen, saved_pair):
                     # unit is a vowel and we are not looking at a
                     # word ending with an e.
                     #
-                    if (not rule_broken and
-                        (gram_rules[unit] & VOWEL) and
-                        ((length_left > 0)
-                          or not (gram_rules[last_unit] & NO_FINAL_SPLIT))):
+                    if (
+                            not rule_broken and
+                            (gram_rules[unit] & VOWEL) and
+                            (
+                                (length_left > 0) or not
+                                (gram_rules[last_unit] & NO_FINAL_SPLIT)
+                            )
+                    ):
                         #
                         # Don't allow 3 consecutive vowels in a
                         # syllable.  Although some words formed
                         # like this are OK, like "beau", most are
                         # not.
                         #
-                        if ((vowel_count > 1) and
-                            (gram_rules[last_unit] & VOWEL)):
+                        if ((vowel_count > 1) and (gram_rules[last_unit] & VOWEL)):
                             rule_broken = 1
 
                         #
@@ -1975,7 +1976,8 @@ def get_syllable(pwlen, saved_pair):
                             # digram cannot legally end it), just
                             # discard it and try for another.
                             #
-                            if (digram_rules[ units_in_syllable[ current_unit - 2] ][last_unit] & NOT_END):
+                            _ = digram_rules[units_in_syllable[current_unit - 2]][last_unit]
+                            if (_ & NOT_END):
                                 rule_broken = 1
                             else:
                                 saved_pair = [unit]
@@ -2003,10 +2005,7 @@ def get_syllable(pwlen, saved_pair):
                             #
 
                             want_another_unit = 0
-                        elif (marked(END,
-                                     last_unit,
-                                     unit)
-                              or (length_left == 0)):
+                        elif (marked(END, last_unit, unit) or (length_left == 0)):
 
                             #
                             # This syllable ends either because the
@@ -2034,12 +2033,14 @@ def get_syllable(pwlen, saved_pair):
                             # of the digram we are pushing to the next
                             # syllable.
                             #
-                            if (marked(BEGIN,
-                                        last_unit,
-                                        unit) and
-                                (current_unit > 1) and
-                                not ((vowel_count == 1) and
-                                   (gram_rules[last_unit] & VOWEL))):
+                            if (
+                                    marked(BEGIN, last_unit, unit) and
+                                    (current_unit > 1) and
+                                    not (
+                                        (vowel_count == 1) and
+                                        (gram_rules[last_unit] & VOWEL)
+                                    )
+                            ):
                                 saved_pair = [unit, last_unit]
                                 want_another_unit = 0
                             elif (
@@ -2083,10 +2084,9 @@ def get_syllable(pwlen, saved_pair):
                 # consecutive vowel rule).
                 #
                 if (
-                    (gram_rules[unit] & VOWEL)
-                and
+                    (gram_rules[unit] & VOWEL) and
                     ((current_unit > 0) or not (gram_rules[unit] & ALTERNATE_VOWEL))
-               ):
+                ):
                     vowel_count = vowel_count + 1
 
 
@@ -2106,7 +2106,7 @@ def get_syllable(pwlen, saved_pair):
                     current_unit = current_unit - 1
 
                 else:
-                    units_in_syllable[ current_unit ] = unit
+                    units_in_syllable[current_unit] = unit
                     syllable = syllable + unit
 
             else:
@@ -2158,53 +2158,45 @@ def _illegal_placement(units):
             #
             if (
                 (
-                    not (gram_rules[units[unit_count-1]] & VOWEL)
-                 and
-                     (gram_rules[units[unit_count  ]] & VOWEL)
-                 and
-                    not ((gram_rules[units[unit_count  ]] & NO_FINAL_SPLIT) and (unit_count == len(units)))
-                 and
-                     vowel_count
-                )
-             or
+                    not (gram_rules[units[unit_count - 1]] & VOWEL) and
+                    (gram_rules[units[unit_count]] & VOWEL) and not
+                    (
+                        (gram_rules[units[unit_count]] & NO_FINAL_SPLIT) and
+                        (unit_count == len(units))
+                    ) and vowel_count
+                ) or
 
-                 #
-                 # Perform these checks when we have at least 3 units.
-                 #
-                 (
-                     (unit_count >= 2)
-                 and
-                     (
-                         #
-                         # Disallow 3 consecutive consonants.
-                         #
-                         (
-                             not (gram_rules[units[unit_count-2]] & VOWEL)
-                         and
-                             not (gram_rules[units[unit_count-1]] & VOWEL)
-                         and
-                             not (gram_rules[units[unit_count]] & VOWEL)
-                        )
-                     or
-
-                         #
-                         # Disallow 3 consecutive vowels, where the
-                         # first is not a y.
-                         #
-                         (
-                             (gram_rules[units[unit_count-2]] & VOWEL)
-                         and
-                             not ((gram_rules[units[0]] & ALTERNATE_VOWEL)
-                                  and (unit_count == 2))
-                         and
-                             (gram_rules[units[unit_count-1]] & VOWEL)
-                         and
-                             (gram_rules[units[unit_count]] & VOWEL)
+                #
+                # Perform these checks when we have at least 3 units.
+                #
+                (
+                    (unit_count >= 2) and
+                    #
+                    # Disallow 3 consecutive consonants.
+                    #
+                    (
+                        (
+                            not (gram_rules[units[unit_count - 2]] & VOWEL) and not
+                            (gram_rules[units[unit_count - 1]] & VOWEL) and not
+                            (gram_rules[units[unit_count]] & VOWEL)
+                        ) or
+                        #
+                        # Disallow 3 consecutive vowels, where the
+                        # first is not a y.
+                        #
+                        (
+                            (gram_rules[units[unit_count - 2]] & VOWEL) and not
+                            (
+                                (gram_rules[units[0]] & ALTERNATE_VOWEL) and
+                                (unit_count == 2)
+                            ) and
+                            (gram_rules[units[unit_count - 1]] & VOWEL) and
+                            (gram_rules[units[unit_count]] & VOWEL)
                         )
                     )
                 )
             ):
-                    failure = 1
+                failure = 1
 
 
 
@@ -2214,16 +2206,13 @@ def _illegal_placement(units):
         # it as a consonant.
         #
         if (
-            (gram_rules[units[unit_count]] & VOWEL)
-        and
-            not (
-                (gram_rules[units[0]] & ALTERNATE_VOWEL)
-            and
-                (unit_count == 0)
-            and
+            (gram_rules[units[unit_count]] & VOWEL) and not
+            (
+                (gram_rules[units[0]] & ALTERNATE_VOWEL) and
+                (unit_count == 0) and
                 (len(units) > 1)
-           )
-       ):
+            )
+        ):
             vowel_count = vowel_count + 1
 
 
