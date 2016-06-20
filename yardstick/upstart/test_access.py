@@ -16,18 +16,18 @@
 # You should have received a copy of the GNU General Public License
 # along with yardstick.  If not, see <http://www.gnu.org/licenses/>.
 
-
-__doc__ = """
-Checks the remote access configuration on a node.
-
-"""
-
 import os
 import logging
 import platform
 import subprocess
 import sys
 import unittest
+
+
+__doc__ = """
+Checks the remote access configuration on a node.
+
+"""
 
 class OpenSSHChecks(unittest.TestCase):
     """

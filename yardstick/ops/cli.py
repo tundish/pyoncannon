@@ -21,6 +21,7 @@ import logging
 import os
 import sys
 
+import yardstick.ops.base
 
 __doc__ = """
 
@@ -32,8 +33,6 @@ It lets you select and launch:
 * modification tasks controlled by a `.ini` file
 
 """
-
-import yardstick.ops.base
 
 
 def parsers(description=__doc__):
@@ -114,7 +113,7 @@ def add_auto_command_parser(subparsers):
     rv.usage = rv.format_usage().replace("usage:", "").replace(
         "auto", "\n\nyardstick [OPTIONS] auto")
     return rv
- 
+
 def add_check_command_parser(subparsers):
     rv = subparsers.add_parser(
         "check", help="Run tests which don't modify the target.",
@@ -152,7 +151,7 @@ def add_check_command_parser(subparsers):
     rv.usage = rv.format_usage().replace("usage:", "").replace(
         "check", "\n\nyardstick [OPTIONS] check")
     return rv
- 
+
 def add_units_command_parser(subparsers):
     rv = subparsers.add_parser(
         "units", help="Find and filter tests by their attributes.",

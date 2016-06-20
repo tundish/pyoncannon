@@ -16,11 +16,6 @@
 # You should have received a copy of the GNU General Public License
 # along with yardstick.  If not, see <http://www.gnu.org/licenses/>.
 
-__doc__ = """
-Entry point for the yardstick program.
-
-"""
-
 from getpass import getpass
 import logging
 import sys
@@ -28,6 +23,11 @@ import sys
 import yardstick
 import yardstick.ops.base
 import yardstick.ops.cli
+
+__doc__ = """
+Entry point for the yardstick program.
+
+"""
 
 
 def main(args):

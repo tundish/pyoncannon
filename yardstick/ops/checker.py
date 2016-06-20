@@ -37,7 +37,7 @@ imports = [
     "string", "struct", "stat", "subprocess", "sys", "sysconfig", "syslog",
     "tarfile", "tempfile", "time", "timeit", "types", "textwrap",
     "unicodedata", "uuid", "unittest", "venv", "warnings", "xml", "zipfile",
-    "zlib" 
+    "zlib"
 ]
 
 
@@ -49,7 +49,7 @@ def check(class_):
     :type class_: unittest.TestCase
     :requires: `platform`, `unittest`.
     """
-    logName="yardstick.{}".format(class_.__name__)
+    logName = "yardstick.{}".format(class_.__name__)
     try:
         msg = log_message(
             logging.INFO,
@@ -83,8 +83,10 @@ def check(class_):
         msg = log_message(logging.INFO, msg="Check complete.", name=logName)
         channel.send(msg)
 
-        rv = {a: [i[1] for i in getattr(rlt, a)]
-                for a in ("errors", "failures", "skipped")}
+        rv = {
+            a: [i[1] for i in getattr(rlt, a)]
+            for a in ("errors", "failures", "skipped")
+        }
         rv["total"] = rlt.testsRun
         channel.send(rv)
     except (EOFError, OSError) as e:

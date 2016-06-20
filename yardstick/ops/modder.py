@@ -31,11 +31,11 @@ class Text:
     @staticmethod
     def arguments(**kwargs):
         rv = {
-                "path": kwargs.get("path", ""),
-                "seek": kwargs.get("seek", "False"),
-                "data": kwargs.get("data", ""),
-                "indent": int(kwargs.get("indent", "0")),
-                "newlines": int(kwargs.get("newlines", "0")),
+            "path": kwargs.get("path", ""),
+            "seek": kwargs.get("seek", "False"),
+            "data": kwargs.get("data", ""),
+            "indent": int(kwargs.get("indent", "0")),
+            "newlines": int(kwargs.get("newlines", "0")),
         }
         if rv["seek"] in ("True", "False"):
             rv["seek"] = bool(rv["seek"])
@@ -85,17 +85,20 @@ class Text:
             yield msg
 
         elif self.seek:
-            args = ( 
+            args = (
                 [content] +
                 [textwrap.indent(self.data, ' ' * self.indent)] +
-                [""] * self.newlines) 
+                [""] * self.newlines
+            )
             self._rv = "\n".join(args)
         else:
-            args = ([textwrap.indent(self.data, ' ' * self.indent)] +
-                [""] * self.newlines + [content])
+            args = (
+                [textwrap.indent(self.data, ' ' * self.indent)] +
+                [""] * self.newlines + [content]
+            )
             self._rv = "\n".join(args)
 
-        #yield log_message(logging.DEBUG, msg=self._rv, name=self._name)
+        # yield log_message(logging.DEBUG, msg=self._rv, name=self._name)
 
         if self._rv is not None and self.path is not None:
             with open(self.path, 'w') as output:
@@ -136,7 +139,7 @@ class Command:
             self._out, self._err = p.communicate()
 
         for msg in (self._out, self._err):
-            if not msg is None and msg.strip():
+            if msg is not None and msg.strip():
                 yield log_message(
                     logging.INFO, msg=msg.decode("utf-8"), name=self._name
                 )
@@ -206,7 +209,7 @@ def lockstep():
 
 
     """
-    logName="yardstick.lockstep"
+    logName = "yardstick.lockstep"
     try:
         msg = log_message(
             logging.INFO,
@@ -252,7 +255,7 @@ def lockstep():
                 op = Op(**Op.arguments(**section))
                 for msg in op(sudo=sudo, sudoPwd=sudoPwd):
                     channel.send(msg)
-            
+
             channel.send(taskNr)
             taskNr = channel.receive()
 

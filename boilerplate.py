@@ -129,8 +129,9 @@ def parser(description=__doc__):
     rv.add_argument(
         "--venv", default=DFLT_VENV,
         help="Specify the Python environment [{}] on the remote host".format(
-            DFLT_VENV)
+            DFLT_VENV
         )
+    )
     rv.add_argument(
         "--db", default=DFLT_DB,
         help="Set the path to the database [{}]".format(DFLT_DB))

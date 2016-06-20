@@ -64,8 +64,10 @@ def execnet_string(ini, args):
     if host in (None, "0.0.0.0", "127.0.0.1", "localhost"):
         rv = "popen//dont_write_bytecode"
     else:
-        rv = ("ssh=-i {identity} -p {port} {user}@{host}"
-         "//python={python}").format(
+        rv = (
+            "ssh=-i {identity} -p {port} {user}@{host}"
+            "//python={python}"
+        ).format(
             identity=os.path.expanduser(args.identity),
             host=host, port=port, user=user, python=python
         )
@@ -96,11 +98,11 @@ def log_setup(args, name="yardstick"):
 
 def gen_auto_tasks(args):
     for spec in args.modules:
-        mod = None # FIXME:
+        mod = None  # FIXME:
         yield mod
     yield yardstick.ops.modder
 
- 
+
 def gen_check_tasks(args):
     ldr = unittest.defaultTestLoader
     testClasses = {
@@ -152,7 +154,7 @@ def loop_over_lockstep(channel, name, ini):
                 for msg in op(sudo=sudo, sudoPwd=sudoPwd):
                     log.handle(msg)
                 channel.send(n)
-            
+
         else:
             channel.send(n)
             loop_over_logrecords(channel, name, n)

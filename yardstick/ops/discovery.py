@@ -53,5 +53,5 @@ operations = OrderedDict(discover("yardstick.plugin.operation"))
 
 if __name__ == "__main__":
     print(*["{:^10} {}".format(k, v) for k, v in globals().items()
-          if isinstance(v, MutableMapping)
-          or isinstance(v, MutableSequence)], sep="\n")
+          if isinstance(v, MutableMapping) or
+          isinstance(v, MutableSequence)], sep="\n")
