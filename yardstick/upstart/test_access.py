@@ -29,7 +29,6 @@ import subprocess
 import sys
 import unittest
 
-        
 class OpenSSHChecks(unittest.TestCase):
     """
     https://help.ubuntu.com/community/SSH/OpenSSH/Configuring
