@@ -139,11 +139,12 @@ class Command:
                 stderr=subprocess.DEVNULL)
             self._out, self._err = p.communicate()
 
-        for msg in (self._out, self._err):
-            if msg is not None and msg.strip():
-                yield log_message(
-                    logging.INFO, msg=msg.decode("utf-8"), name=self._name
-                )
+        for stream, level in ((p.stdout, logging.INFO), (p.stderr, logging.WARNING)):
+            try:
+                for text in stream.readlines():
+                    yield log_message(level, msg=text, name=self._name)
+            except (AttributeError, ValueError):
+                continue
 
 class Wait(Command):
 
